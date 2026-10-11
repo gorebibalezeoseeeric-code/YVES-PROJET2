@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';">
+<meta name="referrer" content="no-referrer">
+<title>Boussole — ERP intelligent pour PME</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A121D'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23D4AF37'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='%23D4AF37' stroke-width='2' opacity='0.55'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23D4AF37' stroke-width='2' opacity='0.3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0A121D; --bg-panel:#0F1B2A; --bg-card:#132436; --bg-card-hi:#16293D;
+  --border:rgba(212,175,55,.15); --border-strong:rgba(212,175,55,.35);
+  --text:#EEF1F6; --text-dim:#93A1B5; --text-faint:#5C6B80;
+  --gold:#D4AF37; --gold-soft:#E9CD73; --gold-dim:rgba(212,175,55,.12);
+  --emerald:#33C08A; --amber:#E3A83B; --wine:#C2485A;
+  --radius:14px; --radius-sm:9px;
+  --shadow:0 20px 50px -22px rgba(0,0,0,.65);
+  --sidebar-w:236px; --topbar-h:64px; --bottom-h:66px;
+}
+body.theme-light{
+  --bg:#FAF7EF; --bg-panel:#FFFFFF; --bg-card:#FFFFFF; --bg-card-hi:#F3EEE0;
+  --border:rgba(154,116,20,.18); --border-strong:rgba(154,116,20,.38);
+  --text:#1E2530; --text-dim:#5C6472; --text-faint:#8B92A0;
+  --gold:#C9A227; --gold-soft:#8A6B14; --gold-dim:rgba(201,162,39,.12);
+  --emerald:#1C8F63; --amber:#AD7B23; --wine:#A3324A;
+  --shadow:0 20px 45px -24px rgba(30,26,10,.22);
+}
+body{transition:background-color .25s ease, color .25s ease;}
+.card, .topbar, .sidebar, .bottomnav, .modal, .assistant-panel, .tour-card, input, select, .btn, .iconbtn, .tag, .navbtn, .table-wrap, th, td, #securityScreen, .pin-key{
+  transition:background-color .2s ease, border-color .2s ease, color .2s ease;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,sans-serif; font-size:14.5px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(212,175,55,.07), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 0%, rgba(51,192,138,.05), transparent 55%);
+  background-attachment:fixed;
+}
+.mono{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums;}
+.display{font-family:'Fraunces',serif;}
+button{font-family:inherit; cursor:pointer;}
+input,select{font-family:inherit;}
+::selection{background:var(--gold-dim); color:var(--gold-soft);}
+a{color:inherit;}
+
+/* ---------- Layout shell ---------- */
+#app{min-height:100%;}
+.topbar{
+  position:fixed; top:0; left:0; right:0; height:var(--topbar-h); z-index:40;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px 0 18px; background:rgba(10,18,29,.86); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.brand{display:flex; align-items:center; gap:10px;}
+.brand-mark{position:relative; width:30px; height:30px; flex:0 0 auto;}
+.brand-mark svg{width:100%; height:100%; display:block;}
+.brand-mark.lg{width:56px; height:56px;}
+.brand-name{font-family:'Fraunces',serif; font-weight:600; font-size:20px; letter-spacing:.2px; color:var(--gold-soft);}
+.brand-tag{display:none;}
+.topbar-right{display:flex; align-items:center; gap:14px;}
+.sync-pill{
+  display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text-dim);
+  background:var(--bg-card); border:1px solid var(--border); padding:6px 11px; border-radius:20px;
+}
+.sync-dot{width:7px; height:7px; border-radius:50%; background:var(--emerald); box-shadow:0 0 0 3px rgba(51,192,138,.18);}
+.sync-dot.off{background:var(--amber); box-shadow:0 0 0 3px rgba(227,168,59,.18);}
+.topbar-date{font-size:12.5px; color:var(--text-faint); display:none;}
+
+.sidebar{
+  position:fixed; left:0; top:var(--topbar-h); bottom:0; width:var(--sidebar-w);
+  border-right:1px solid var(--border); padding:18px 12px; display:none;
+  flex-direction:column; gap:2px; overflow-y:auto; background:rgba(15,27,42,.5);
+}
+.navbtn{
+  display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:10px;
+  background:transparent; border:1px solid transparent; color:var(--text-dim);
+  font-size:13.5px; font-weight:500; text-align:left; width:100%; transition:.15s;
+}
+.navbtn svg{width:17px; height:17px; flex:0 0 auto; opacity:.8;}
+.navbtn:hover{background:var(--bg-card); color:var(--text);}
+.navbtn.active{background:var(--gold-dim); color:var(--gold-soft); border-color:var(--border-strong);}
+.navbtn .badge{margin-left:auto; background:var(--wine); color:#fff; font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:20px;}
+.sidebar-foot{margin-top:auto; padding-top:14px; border-top:1px solid var(--border); font-size:10.8px; color:var(--text-faint); line-height:1.6;}
+
+.bottomnav{
+  position:fixed; left:0; right:0; bottom:0; height:var(--bottom-h); z-index:40;
+  display:flex; background:rgba(10,18,29,.94); backdrop-filter:blur(10px);
+  border-top:1px solid var(--border);
+}
+.bottomnav .navbtn{flex-direction:column; gap:3px; font-size:10px; padding:8px 2px 10px; border-radius:0; text-align:center; justify-content:center; position:relative;}
+.bottomnav .navbtn svg{width:19px; height:19px;}
+.bottomnav .navbtn .badge{position:absolute; margin-left:0; top:2px; right:26%; padding:1px 5px;}
+
+main{padding:24px 16px 90px; max-width:1180px; margin:0 auto; margin-top:var(--topbar-h);}
+.view{display:none; animation:fadein .25s ease;}
+.view.active{display:block;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)}}
+
+@media(min-width:900px){
+  .sidebar{display:flex;}
+  .bottomnav{display:none;}
+  main{margin-left:var(--sidebar-w); padding:32px 36px 60px; max-width:1180px;}
+  .brand-tag{display:block; font-size:11px; color:var(--text-faint); border-left:1px solid var(--border); padding-left:10px; margin-left:2px;}
+  .topbar-date{display:block;}
+  .topbar{padding:0 32px 0 26px;}
+}
+
+/* ---------- Common components ---------- */
+.section-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:18px; flex-wrap:wrap;}
+.section-head h1{font-family:'Fraunces',serif; font-weight:600; font-size:26px;}
+.section-head p{color:var(--text-dim); font-size:13px; margin-top:3px;}
+.btn{
+  display:inline-flex; align-items:center; gap:7px; padding:9px 16px; border-radius:10px;
+  border:1px solid var(--border-strong); background:var(--gold-dim); color:var(--gold-soft);
+  font-size:13px; font-weight:600; transition:.15s; white-space:nowrap;
+}
+.btn:hover{background:rgba(212,175,55,.2);}
+.btn.primary{background:var(--gold); color:#12100a; border-color:var(--gold);}
+.btn.primary:hover{background:var(--gold-soft);}
+.btn.ghost{background:transparent; border-color:var(--border);}
+.btn.danger{background:rgba(194,72,90,.12); border-color:rgba(194,72,90,.4); color:#e98a97;}
+.btn svg{width:14px; height:14px;}
+.btn.sm{padding:6px 11px; font-size:12px;}
+
+.card{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px;}
+.grid{display:grid; gap:14px;}
+.kpi-grid{grid-template-columns:repeat(2,1fr); margin-bottom:18px;}
+@media(min-width:560px){.kpi-grid{grid-template-columns:repeat(auto-fit,minmax(155px,1fr));}}
+.kpi{padding:16px 16px 14px;}
+.kpi-label{font-size:11.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px;}
+.kpi-value{font-family:'IBM Plex Mono',monospace; font-size:21px; font-weight:600; letter-spacing:-.2px;}
+.kpi-delta{font-size:11.5px; margin-top:6px; display:flex; align-items:center; gap:4px;}
+.kpi-delta svg{width:12px; height:12px; flex:0 0 auto;}
+.kpi-delta.up{color:var(--emerald);} .kpi-delta.down{color:var(--wine);} .kpi-delta.flat{color:var(--text-faint);}
+
+.charts-row{display:grid; gap:14px; grid-template-columns:1fr; margin-bottom:18px;}
+@media(min-width:900px){.charts-row{grid-template-columns:1.4fr 1fr;}}
+.card h3{font-size:14px; font-weight:600; margin-bottom:2px;}
+.card .sub{font-size:11.5px; color:var(--text-faint); margin-bottom:14px;}
+.chart-wrap{position:relative; height:210px;}
+
+.insights{display:flex; flex-direction:column; gap:10px; margin-bottom:18px;}
+.insight{display:flex; gap:12px; padding:13px 14px; border-radius:var(--radius-sm); background:var(--bg-card); border:1px solid var(--border); border-left:3px solid var(--text-faint);}
+.insight.critical{border-left-color:var(--wine);}
+.insight.warning{border-left-color:var(--amber);}
+.insight.opportunity{border-left-color:var(--emerald);}
+.insight.info{border-left-color:var(--gold);}
+.insight-icon{width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; background:rgba(255,255,255,.04);}
+.insight.critical .insight-icon{color:var(--wine);} .insight.warning .insight-icon{color:var(--amber);}
+.insight.opportunity .insight-icon{color:var(--emerald);} .insight.info .insight-icon{color:var(--gold-soft);}
+.insight-icon svg{width:16px; height:16px;}
+.insight-body{flex:1; min-width:0;}
+.insight-body .t{font-weight:600; font-size:13.5px; margin-bottom:2px;}
+.insight-body .d{font-size:12.5px; color:var(--text-dim); line-height:1.5;}
+.insight-action{font-size:11.5px; font-weight:600; color:var(--gold-soft); margin-top:6px; display:inline-block;}
+.insight-empty{text-align:center; padding:26px; color:var(--text-faint); font-size:13px;}
+.insight-head-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;}
+.insight-head-row h3{font-size:14px; font-weight:600;}
+
+table{width:100%; border-collapse:collapse; font-size:13px;}
+th{text-align:left; font-size:10.8px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-faint); font-weight:600; padding:0 12px 10px; white-space:nowrap;}
+td{padding:12px; border-top:1px solid var(--border); vertical-align:middle;}
+tr:hover td{background:rgba(255,255,255,.014);}
+.table-wrap{overflow-x:auto; border-radius:var(--radius); border:1px solid var(--border);}
+.table-wrap table{min-width:560px;}
+.pname{font-weight:600;}
+.psub{font-size:11px; color:var(--text-faint);}
+.tag{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:3px 9px; border-radius:20px;}
+.tag svg{width:11px; height:11px; flex:0 0 auto;}
+.tag.ok{background:rgba(51,192,138,.12); color:var(--emerald);}
+.tag.warn{background:rgba(227,168,59,.14); color:var(--amber);}
+.tag.crit{background:rgba(194,72,90,.15); color:#e98a97;}
+.row-actions{display:flex; gap:6px; justify-content:flex-end;}
+.iconbtn{width:29px; height:29px; border-radius:8px; background:var(--bg-card-hi); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-dim);}
+.iconbtn:hover{color:var(--gold-soft); border-color:var(--border-strong);}
+.iconbtn svg{width:14px; height:14px;}
+.iconbtn[disabled]{opacity:.35; pointer-events:none;}
+.empty-row td{text-align:center; color:var(--text-faint); padding:32px;}
+
+/* Simulator */
+.sim-grid{display:grid; gap:16px; grid-template-columns:1fr;}
+@media(min-width:800px){.sim-grid{grid-template-columns:1fr 1fr;}}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:12px; color:var(--text-dim); margin-bottom:7px; font-weight:500;}
+.field select, .field input[type=text], .field input[type=number]{
+  width:100%; background:var(--bg-panel); border:1px solid var(--border); color:var(--text);
+  padding:10px 12px; border-radius:9px; font-size:13.5px;
+}
+.field select:focus, .field input:focus{outline:none; border-color:var(--border-strong);}
+.slider-row{display:flex; align-items:center; gap:12px;}
+input[type=range]{-webkit-appearance:none; flex:1; height:4px; background:var(--border-strong); border-radius:4px; outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:17px; height:17px; border-radius:50%; background:var(--gold); border:2px solid var(--bg); cursor:pointer;}
+.slider-val{font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--gold-soft); min-width:48px; text-align:right;}
+.sim-result{padding:18px;}
+.sim-line{display:flex; justify-content:space-between; padding:9px 0; border-top:1px solid var(--border); font-size:13px;}
+.sim-line:first-child{border-top:none;}
+.sim-line .l{color:var(--text-dim);}
+.sim-line .v{font-family:'IBM Plex Mono',monospace; font-weight:600;}
+.sim-delta{margin-top:14px; padding:13px; border-radius:10px; background:rgba(51,192,138,.1); border:1px solid rgba(51,192,138,.28); text-align:center;}
+.sim-delta.neg{background:rgba(194,72,90,.1); border-color:rgba(194,72,90,.28);}
+.sim-delta .big{font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:700; color:var(--emerald);}
+.sim-delta.neg .big{color:#e98a97;}
+.sim-note{font-size:11.5px; color:var(--text-faint); margin-top:12px; line-height:1.6;}
+
+/* Modal */
+.overlay{position:fixed; inset:0; background:rgba(4,8,13,.7); backdrop-filter:blur(3px); z-index:80; display:none; align-items:flex-end; justify-content:center;}
+.overlay.active{display:flex;}
+@media(min-width:640px){.overlay{align-items:center;}}
+.modal{background:var(--bg-panel); border:1px solid var(--border-strong); border-radius:16px 16px 0 0; width:100%; max-width:460px; max-height:88vh; overflow-y:auto; padding:22px; box-shadow:var(--shadow);}
+@media(min-width:640px){.modal{border-radius:16px;}}
+.modal h2{font-family:'Fraunces',serif; font-size:19px; font-weight:600; margin-bottom:18px;}
+.modal-actions{display:flex; gap:10px; margin-top:6px;}
+.modal-actions .btn{flex:1; justify-content:center;}
+
+/* Toast */
+#toast{position:fixed; left:50%; bottom:calc(var(--bottom-h) + 14px); transform:translateX(-50%) translateY(10px); background:var(--bg-card-hi); border:1px solid var(--border-strong); color:var(--text); padding:11px 18px; border-radius:10px; font-size:13px; box-shadow:var(--shadow); z-index:100; opacity:0; pointer-events:none; transition:.25s;}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+@media(min-width:900px){#toast{bottom:22px;}}
+
+/* Settings */
+.settings-block{margin-bottom:16px;}
+.settings-block h3{font-size:13px; font-weight:600; margin-bottom:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em;}
+.settings-block h3 svg{width:14px; height:14px; vertical-align:-2px; margin-right:4px;}
+.about-card{display:flex; align-items:center; gap:14px;}
+.about-card .brand-mark{width:42px; height:42px;}
+
+.hero{position:relative; overflow:hidden; padding:22px 20px; margin-bottom:20px;}
+.hero-radar{position:absolute; top:-40px; right:-40px; width:220px; height:220px; opacity:.5; pointer-events:none;}
+.hero-radar circle{fill:none; stroke:var(--gold); }
+.hero-sweep{transform-origin:110px 110px; animation:sweep 6s linear infinite;}
+@keyframes sweep{from{transform:rotate(0deg)} to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.hero-sweep{animation:none;}}
+.hero h1{font-family:'Fraunces',serif; font-size:clamp(17px,5.2vw,23px); font-weight:600; margin-bottom:4px; position:relative; line-height:1.3; word-break:break-word;}
+.hero p{color:var(--text-dim); font-size:13px; position:relative;}
+
+/* ---------- Sections du tableau de bord ---------- */
+.bi-grid{
+  display:grid; gap:14px; margin-bottom:18px;
+  grid-template-columns:1fr;
+  grid-template-areas:
+    "kpis" "counts" "alerts" "chart1" "chart2" "prod" "cat" "cmp" "chart3";
+}
+@media(min-width:700px){
+  .bi-grid{
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:
+      "kpis   kpis"
+      "counts counts"
+      "alerts chart1"
+      "chart2 chart3"
+      "prod   cat"
+      "cmp    cmp";
+  }
+}
+@media(min-width:1100px){
+  .bi-grid{
+    grid-template-columns:1.05fr 1.3fr 1fr;
+    grid-template-areas:
+      "kpis   kpis   kpis"
+      "counts counts counts"
+      "alerts chart1 chart2"
+      "prod   cat    cmp"
+      "chart3 chart3 chart3";
+  }
+}
+.area-kpis{grid-area:kpis;} .area-counts{grid-area:counts;} .area-alerts{grid-area:alerts;}
+.area-chart1{grid-area:chart1;} .area-chart2{grid-area:chart2;} .area-chart3{grid-area:chart3;}
+.area-prod{grid-area:prod;} .area-cat{grid-area:cat;} .area-cmp{grid-area:cmp;}
+
+.kpi-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px;}
+@media(min-width:1100px){.kpi-strip{display:flex; flex-wrap:nowrap; overflow-x:auto; padding-bottom:2px;}
+  .kpi-strip .kpi{flex:1 0 150px;}}
+.kpi-strip::-webkit-scrollbar{height:5px;}
+.kpi-strip::-webkit-scrollbar-thumb{background:var(--border-strong); border-radius:10px;}
+
+.alerts-panel{max-height:400px; overflow-y:auto; display:flex; flex-direction:column; gap:9px; padding-right:2px;}
+.split-card{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+@media(max-width:480px){.split-card{grid-template-columns:1fr; gap:18px;}}
+.split-card .half h4{font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-faint); margin-bottom:9px;}
+
+.dash-section{margin-bottom:22px;}
+.dash-section-title{font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+.dash-section-title .line{flex:1; height:1px; background:var(--border);}
+
+.stat-row{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:18px;}
+@media(min-width:560px){.stat-row{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));}}
+.stat-chip{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; text-align:center;}
+.stat-chip .n{font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:600;}
+.stat-chip .l{font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em; margin-top:3px;}
+
+.ranked-list{display:flex; flex-direction:column; gap:10px;}
+.ranked-row{display:grid; grid-template-columns:16px 1fr auto; align-items:center; gap:10px; font-size:12.5px;}
+.ranked-row .idx{color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:11px;}
+.ranked-row .bar-wrap{background:rgba(255,255,255,.05); border-radius:20px; height:7px; overflow:hidden; margin-top:4px;}
+body.theme-light .ranked-row .bar-wrap{background:rgba(0,0,0,.06);}
+.ranked-row .bar{height:100%; border-radius:20px; background:linear-gradient(90deg,var(--gold),var(--gold-soft));}
+.ranked-row .name{font-weight:600;}
+.ranked-row .val{font-family:'IBM Plex Mono',monospace; font-weight:600; white-space:nowrap;}
+.ranked-empty{color:var(--text-faint); font-size:12.5px; text-align:center; padding:16px;}
+
+.compare-table{width:100%; font-size:13px;}
+.compare-table td{padding:9px 4px; border-top:1px solid var(--border);}
+.compare-table tr:first-child td{border-top:none;}
+.compare-table .lbl{color:var(--text-dim);}
+.compare-table .num{font-family:'IBM Plex Mono',monospace; text-align:right; font-weight:600;}
+.compare-table .delta{text-align:right; font-size:11.5px; width:80px;}
+
+.forecast-card{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+.forecast-card .fnum{font-family:'IBM Plex Mono',monospace; font-size:24px; font-weight:700; color:var(--gold-soft);}
+.forecast-card .flabel{font-size:12px; color:var(--text-dim); max-width:340px; line-height:1.5;}
+.forecast-badge{font-size:10px; text-transform:uppercase; letter-spacing:.05em; background:var(--gold-dim); color:var(--gold-soft); padding:2px 8px; border-radius:10px; margin-left:6px; vertical-align:1px;}
+
+.supplier-row{display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-top:1px solid var(--border); font-size:13px;}
+.supplier-row:first-child{border-top:none;}
+.category-pill{font-size:10.5px; color:var(--text-faint); background:rgba(255,255,255,.04); border:1px solid var(--border); padding:1px 8px; border-radius:10px; display:inline-block; margin-top:3px;}
+
+/* ---------- Assistant IA ---------- */
+.assistant-fab{
+  position:fixed; right:14px; bottom:calc(var(--bottom-h) + 14px); z-index:71;
+  width:56px; height:56px; border-radius:50%; border:none;
+  background:linear-gradient(135deg,var(--gold-soft),var(--gold) 60%,#a9821f);
+  color:#14110a; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 12px 28px -8px rgba(212,175,55,.55); transition:.2s;
+}
+.assistant-fab:hover{transform:translateY(-2px);}
+.assistant-fab svg{width:24px; height:24px;}
+.assistant-fab .ring{position:absolute; inset:-5px; border-radius:50%; border:1.5px solid var(--gold); opacity:.55; animation:fabring 2.4s ease-out infinite;}
+@keyframes fabring{0%{transform:scale(.9); opacity:.55;} 100%{transform:scale(1.35); opacity:0;}}
+@media (prefers-reduced-motion: reduce){.assistant-fab .ring{animation:none; display:none;}}
+@media(min-width:900px){.assistant-fab{right:28px; bottom:26px;}}
+
+.assistant-panel{
+  position:fixed; left:0; right:0; bottom:0; z-index:70; height:0; overflow:hidden;
+  background:var(--bg-panel); border-top:1px solid var(--border-strong);
+  border-radius:18px 18px 0 0; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; transition:height .3s cubic-bezier(.2,.8,.3,1);
+}
+.assistant-panel.open{height:74vh;}
+@media(min-width:900px){
+  .assistant-panel{left:auto; right:28px; bottom:94px; width:378px; border-radius:16px;}
+  .assistant-panel.open{height:540px;}
+}
+.assistant-head{display:flex; align-items:center; gap:10px; padding:13px 14px; border-bottom:1px solid var(--border); flex:0 0 auto;}
+.assistant-head .av{width:32px; height:32px; border-radius:50%; background:var(--gold-dim); border:1px solid var(--border-strong); display:flex; align-items:center; justify-content:center; color:var(--gold-soft); flex:0 0 auto;}
+.assistant-head .av svg{width:16px; height:16px;}
+.assistant-head .info{flex:1; min-width:0;}
+.assistant-head .info .n{font-weight:600; font-size:13.5px;}
+.assistant-head .info .s{font-size:10.8px; color:var(--text-faint);}
+.assistant-head .hd-actions{display:flex; gap:6px;}
+
+.assistant-body{flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:9px;}
+.a-msg{max-width:85%; padding:9px 12px; border-radius:13px; font-size:13px; line-height:1.5;}
+.a-msg.bot{align-self:flex-start; background:var(--bg-card); border:1px solid var(--border); border-bottom-left-radius:3px;}
+.a-msg.user{align-self:flex-end; background:var(--gold-dim); color:var(--gold-soft); border:1px solid var(--border-strong); border-bottom-right-radius:3px;}
+.a-choices{display:flex; flex-wrap:wrap; gap:7px; align-self:flex-start; max-width:94%;}
+.a-choices button{font-size:12px; padding:6px 12px; border-radius:20px; background:var(--bg-card-hi); border:1px solid var(--border-strong); color:var(--gold-soft); font-weight:600;}
+
+.assistant-quick{display:flex; gap:7px; padding:0 14px 10px; overflow-x:auto; flex:0 0 auto;}
+.assistant-quick button{flex:0 0 auto; font-size:11.5px; padding:6px 11px; border-radius:20px; background:var(--bg-card); border:1px solid var(--border); color:var(--text-dim); white-space:nowrap;}
+.assistant-quick button:hover{color:var(--gold-soft); border-color:var(--border-strong);}
+
+.assistant-input{display:flex; align-items:center; gap:7px; padding:10px 12px; border-top:1px solid var(--border); flex:0 0 auto;}
+.assistant-input input{flex:1; background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:9px 13px; border-radius:20px; font-size:13px; min-width:0;}
+.assistant-input input:focus{outline:none; border-color:var(--border-strong);}
+.assistant-input .iconbtn{border-radius:50%; flex:0 0 auto;}
+.assistant-input .iconbtn.mic.listening{color:#fff; background:var(--wine); border-color:var(--wine); animation:pulseMic 1s infinite;}
+@keyframes pulseMic{0%,100%{box-shadow:0 0 0 0 rgba(194,72,90,.45);} 50%{box-shadow:0 0 0 7px rgba(194,72,90,0);}}
+
+/* ---------- Visite guidée ---------- */
+.tour-overlay{position:fixed; inset:0; z-index:95; display:none;}
+.tour-overlay.active{display:block;}
+.tour-spot{position:absolute; border-radius:12px; border:2px solid var(--gold); box-shadow:0 0 0 9999px rgba(4,8,13,.82); transition:all .3s cubic-bezier(.2,.8,.3,1); pointer-events:none;}
+.tour-card{position:absolute; width:280px; max-width:calc(100vw - 32px); background:var(--bg-panel); border:1px solid var(--border-strong); border-radius:14px; padding:16px; box-shadow:var(--shadow); transition:all .3s cubic-bezier(.2,.8,.3,1);}
+.tour-progress{font-size:10.5px; color:var(--gold-soft); font-weight:700; letter-spacing:.05em; text-transform:uppercase; margin-bottom:7px;}
+.tour-title{font-family:'Fraunces',serif; font-weight:600; font-size:15.5px; margin-bottom:6px;}
+.tour-desc{font-size:12.5px; color:var(--text-dim); line-height:1.55; margin-bottom:14px;}
+.tour-actions{display:flex; align-items:center; gap:8px;}
+
+/* ---------- Sécurité : verrouillage / code PIN ---------- */
+#securityScreen{position:fixed; inset:0; z-index:300; background:var(--bg); display:none; align-items:center; justify-content:center; padding:24px; overflow-y:auto;
+  background-image:radial-gradient(ellipse 900px 500px at 15% -10%, rgba(212,175,55,.07), transparent 60%);}
+#securityScreen.active{display:flex;}
+.sec-scroll{display:flex; flex-direction:column; align-items:center; width:100%;}
+.sec-intro{text-align:center; margin-bottom:24px;}
+.sec-intro h1{font-family:'Fraunces',serif; font-size:22px; font-weight:600; margin:12px 0 6px;}
+.sec-intro p{color:var(--text-dim); font-size:13px; max-width:320px; margin:0 auto; line-height:1.6;}
+.pin-wrap{display:flex; flex-direction:column; align-items:center; gap:18px;}
+.pin-wrap.shake{animation:shake .4s;}
+@keyframes shake{10%,90%{transform:translateX(-3px)} 20%,80%{transform:translateX(5px)} 30%,50%,70%{transform:translateX(-9px)} 40%,60%{transform:translateX(9px)}}
+.pin-title{font-weight:600; font-size:13.5px; color:var(--text-dim);}
+.pin-dots{display:flex; gap:14px;}
+.pin-dot{width:14px; height:14px; border-radius:50%; border:1.5px solid var(--border-strong); transition:.15s;}
+.pin-dot.filled{background:var(--gold); border-color:var(--gold);}
+.pin-error{color:#e98a97; font-size:12px; min-height:16px; text-align:center; max-width:280px;}
+.pin-keys{display:grid; grid-template-columns:repeat(3,64px); gap:14px;}
+.pin-key{width:64px; height:64px; border-radius:50%; background:var(--bg-card); border:1px solid var(--border); color:var(--text); font-size:20px; font-family:'IBM Plex Mono',monospace; font-weight:600;}
+.pin-key:active{background:var(--bg-card-hi); border-color:var(--border-strong);}
+.pin-back{font-size:17px; color:var(--text-dim);}
+.pin-blank{width:64px; height:64px;}
+.sec-link{margin-top:20px; background:none; border:none; color:var(--text-faint); font-size:12px; text-decoration:underline;}
+.sec-badge{display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--emerald); background:rgba(51,192,138,.1); border:1px solid rgba(51,192,138,.28); padding:5px 11px; border-radius:20px; margin-top:16px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0F1B2A"/><circle cx="32" cy="32" r="6" fill="#D4AF37"/><circle cx="32" cy="32" r="14" fill="none" stroke="#D4AF37" stroke-width="2" opacity="0.55"/><circle cx="32" cy="32" r="22" fill="none" stroke="#D4AF37" stroke-width="2" opacity="0.28"/></svg>
+      </div>
+      <span class="brand-name">Boussole</span>
+      <span class="brand-tag">ERP intelligent pour PME</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-date mono" id="topDate"></span>
+      <button class="iconbtn" id="themeToggleBtn" data-action="toggle-theme" title="Changer d'apparence"></button>
+      <div class="sync-pill">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncLabel">Chiffré &amp; synchronisé</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="sidebar" id="sidebar"></nav>
+
+  <main>
+    <section class="view" id="view-dashboard" data-view="dashboard"></section>
+    <section class="view" id="view-stock" data-view="stock"></section>
+    <section class="view" id="view-ventes" data-view="ventes"></section>
+    <section class="view" id="view-clients" data-view="clients"></section>
+    <section class="view" id="view-simulateur" data-view="simulateur"></section>
+    <section class="view" id="view-parametres" data-view="parametres"></section>
+  </main>
+
+  <nav class="bottomnav" id="bottomnav"></nav>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modalBody"></div></div>
+<div id="toast"></div>
+
+<button class="assistant-fab" id="assistantFab" data-action="toggle-assistant" title="Assistant Boussole">
+  <span class="ring"></span>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a4 4 0 0 0-4 4v4a4 4 0 0 0 8 0V7a4 4 0 0 0-4-4z"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M9 21h6"/></svg>
+</button>
+
+<div class="assistant-panel" id="assistantPanel">
+  <div class="assistant-head">
+    <div class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a4 4 0 0 0-4 4v4a4 4 0 0 0 8 0V7a4 4 0 0 0-4-4z"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M9 21h6"/></svg></div>
+    <div class="info"><div class="n">Boussole</div><div class="s" id="assistantStatus">Votre assistante</div></div>
+    <div class="hd-actions">
+      <button class="iconbtn" id="voiceToggleBtn" data-action="toggle-voice" title="Activer/couper la voix"></button>
+      <button class="iconbtn" data-action="toggle-assistant" title="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+  </div>
+  <div class="assistant-body" id="assistantMessages"></div>
+  <div class="assistant-quick" id="assistantQuick">
+    <button data-action="assistant-quick" data-q="Résumé du jour">Résumé du jour</button>
+    <button data-action="assistant-quick" data-q="Produits en rupture">Produits en rupture</button>
+    <button data-action="assistant-quick" data-q="Clients en retard">Clients en retard</button>
+    <button data-action="assistant-quick" data-q="Visite guidée">Visite guidée</button>
+  </div>
+  <div class="assistant-input">
+    <button class="iconbtn mic" id="micBtn" data-action="mic-toggle" title="Parler">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></svg>
+    </button>
+    <input type="text" id="assistantInput" placeholder="Posez votre question…" autocomplete="off">
+    <button class="iconbtn" id="sendBtn" data-action="assistant-send" title="Envoyer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="tour-overlay" id="tourOverlay">
+  <div class="tour-spot" id="tourSpot"></div>
+  <div class="tour-card" id="tourCard">
+    <div class="tour-progress" id="tourProgress"></div>
+    <div class="tour-title" id="tourTitle"></div>
+    <div class="tour-desc" id="tourDesc"></div>
+    <div class="tour-actions">
+      <button class="btn ghost sm" data-action="tour-skip">Passer</button>
+      <div style="flex:1"></div>
+      <button class="btn ghost sm" id="tourPrevBtn" data-action="tour-prev">Précédent</button>
+      <button class="btn primary sm" id="tourNextBtn" data-action="tour-next">Suivant</button>
+    </div>
+  </div>
+</div>
+
+<div id="securityScreen"><div class="sec-scroll" id="securityScroll"></div></div>
+
+<script>
+'use strict';
+
+/* ===================== ICONS ===================== */
+const ICONS = {
+  dashboard:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="9" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></svg>',
+  stock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>',
+  ventes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.4l2.2 11.4a2 2 0 0 0 2 1.6h8a2 2 0 0 0 2-1.6L21 7H6"/></svg>',
+  clients:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3.6"/><path d="M22.5 21v-2a4 4 0 0 0-3-3.87"/><path d="M15.5 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  simulateur:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9M4 5v0M12 21V13M12 9V3M20 21v-6M20 11V3"/><circle cx="4" cy="7" r="2"/><circle cx="12" cy="11" r="2"/><circle cx="20" cy="13" r="2"/></svg>',
+  parametres:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.35a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.64 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.64a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.65a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.35 9c.14.6.6 1.06 1.19 1.19"/></svg>',
+  alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86L1.8 18a1.6 1.6 0 0 0 1.4 2.4h17.6a1.6 1.6 0 0 0 1.4-2.4L13.7 3.86a1.6 1.6 0 0 0-2.8 0z"/><path d="M12 9v4"/><path d="M12 16.5v.1"/></svg>',
+  trendDown:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M23 18l-9.5-9.5-5 5L1 6"/><path d="M17 18h6v-6"/></svg>',
+  trendUp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3.2 2"/></svg>',
+  bulb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6.5 6.5 0 0 0-3.6 11.9c.5.36.85.98.85 1.6H14.75c0-.62.35-1.24.85-1.6A6.5 6.5 0 0 0 12 3z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  whatsapp:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.7-.85-2-.95-.27-.1-.46-.15-.66.15-.2.3-.75.94-.92 1.14-.17.2-.34.22-.63.07-.3-.15-1.24-.46-2.36-1.46-.87-.78-1.46-1.73-1.63-2.03-.17-.3-.02-.46.13-.6.13-.14.3-.34.45-.51.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.66-1.6-.91-2.18-.24-.58-.48-.5-.66-.5h-.56c-.2 0-.51.07-.78.37s-1.02 1-1.02 2.43 1.05 2.82 1.2 3.02c.15.2 2.06 3.15 5 4.42.7.3 1.24.48 1.67.6.7.23 1.34.2 1.84.12.56-.08 1.7-.7 1.95-1.36.24-.67.24-1.24.17-1.36-.07-.12-.26-.2-.55-.35z"/><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.44A10 10 0 1 0 12 2z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+  refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>',
+  download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>',
+  speaker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  speakerOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6"/><path d="M17 9l6 6"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="M9 12l2 2 4-4"/></svg>',
+  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>',
+  building:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 8h.01M15 8h.01M9 12h.01M15 12h.01M9 16h.01M15 16h.01"/></svg>',
+  truck:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="14" height="11" rx="1"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.6"/><circle cx="17" cy="19" r="1.6"/></svg>',
+};
+
+/* ===================== APPARENCE (clair / sombre) ===================== */
+function applyTheme(theme){
+  document.body.classList.toggle('theme-light', theme==='light');
+  try{ localStorage.setItem('boussole_theme', theme); }catch(e){}
+  const b = document.getElementById('themeToggleBtn');
+  if(b) b.innerHTML = theme==='light' ? ICONS.moon : ICONS.sun;
+}
+(function initTheme(){
+  let saved = 'dark';
+  try{ saved = localStorage.getItem('boussole_theme') || 'dark'; }catch(e){}
+  applyTheme(saved);
+})();
+
+/* ===================== SÉCURITÉ : chiffrement AES-256 + code PIN ===================== */
+const SEC_KEY = 'vigie_security_v1';
+const DATA_KEY = 'vigie_erp_v2_enc';
+const LEGACY_DATA_KEY = 'vigie_erp_v1';
+const PBKDF2_ITER = 200000;
+
+let sessionKey = null;   // CryptoKey — n'existe qu'en mémoire, jamais stocké
+let sessionSalt = null;
+
+function b64encode(buf){ return btoa(String.fromCharCode(...new Uint8Array(buf))); }
+function b64decode(str){ const bin=atob(str); const arr=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i); return arr.buffer; }
+
+function loadSecurityConfig(){ try{ return JSON.parse(localStorage.getItem(SEC_KEY)); }catch(e){ return null; } }
+function saveSecurityConfig(cfg){ localStorage.setItem(SEC_KEY, JSON.stringify(cfg)); }
+
+async function deriveKey(pin, saltB64){
+  const salt = b64decode(saltB64);
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt, iterations:PBKDF2_ITER, hash:'SHA-256'},
+    baseKey, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']
+  );
+}
+
+async function encryptAndStore(){
+  if(!sessionKey) return;
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder().encode(JSON.stringify(state));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, sessionKey, enc);
+  localStorage.setItem(DATA_KEY, JSON.stringify({iv:b64encode(iv), data:b64encode(ct)}));
+}
+
+async function createLock(pin, preserveAutoLock){
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const saltB64 = b64encode(salt);
+  sessionKey = await deriveKey(pin, saltB64);
+  sessionSalt = saltB64;
+  saveSecurityConfig({salt:saltB64, iterations:PBKDF2_ITER, failedAttempts:0, lockedUntil:0, autoLockMinutes: preserveAutoLock ?? 5});
+}
+
+async function unlockWithPin(pin){
+  const cfg = loadSecurityConfig();
+  if(!cfg) throw new Error('no-config');
+  const key = await deriveKey(pin, cfg.salt);
+  const raw = localStorage.getItem(DATA_KEY);
+  if(raw){
+    const parsed = JSON.parse(raw);
+    const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64decode(parsed.iv)}, key, b64decode(parsed.data)); // throws if PIN wrong
+    state = JSON.parse(new TextDecoder().decode(pt));
+  } else {
+    state = seedDemoData();
+  }
+  sessionKey = key; sessionSalt = cfg.salt;
+  cfg.failedAttempts = 0; cfg.lockedUntil = 0;
+  saveSecurityConfig(cfg);
+}
+
+function escapeHTML(str){
+  return String(str==null?'':str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* --- Pavé numérique --- */
+function buildPinPad(opts){
+  let buffer = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'pin-wrap';
+  const keys = [1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" class="pin-key" data-d="${n}">${n}</button>`).join('');
+  wrap.innerHTML = `
+    <div class="pin-title">${escapeHTML(opts.title||'')}</div>
+    <div class="pin-dots">${'<span class="pin-dot"></span>'.repeat(4)}</div>
+    <div class="pin-error"></div>
+    <div class="pin-keys">
+      ${keys}
+      <div class="pin-blank"></div>
+      <button type="button" class="pin-key" data-d="0">0</button>
+      <button type="button" class="pin-key pin-back" data-d="back">⌫</button>
+    </div>
+  `;
+  const dots = wrap.querySelectorAll('.pin-dot');
+  function updateDots(){ dots.forEach((d,i)=>d.classList.toggle('filled', i<buffer.length)); }
+  wrap.querySelectorAll('.pin-key').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.d==='back'){ buffer = buffer.slice(0,-1); updateDots(); return; }
+      if(buffer.length>=4) return;
+      buffer += btn.dataset.d;
+      updateDots();
+      if(buffer.length===4){
+        const pin = buffer;
+        setTimeout(()=>{ buffer=''; updateDots(); }, 120);
+        opts.onSubmit(pin, wrap);
+      }
+    });
+  });
+  wrap.setError = (msg)=>{ wrap.querySelector('.pin-error').textContent = msg||''; };
+  return wrap;
+}
+function shakeAndClear(wrapEl, msg){
+  wrapEl.classList.add('shake');
+  if(msg) wrapEl.setError(msg);
+  setTimeout(()=>wrapEl.classList.remove('shake'), 400);
+}
+
+/* --- Écran de création du code --- */
+function showSetupScreen(){
+  const root = document.getElementById('securityScroll');
+  document.getElementById('securityScreen').classList.add('active');
+  let firstPin = null;
+
+  function render(padWrap, title, sub){
+    root.innerHTML = '';
+    const intro = document.createElement('div');
+    intro.className = 'sec-intro';
+    intro.innerHTML = `<div class="brand-mark lg" style="margin:0 auto;"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0F1B2A"/><circle cx="32" cy="32" r="6" fill="#D4AF37"/><circle cx="32" cy="32" r="14" fill="none" stroke="#D4AF37" stroke-width="2" opacity="0.55"/><circle cx="32" cy="32" r="22" fill="none" stroke="#D4AF37" stroke-width="2" opacity="0.28"/></svg></div><h1>${title}</h1><p>${sub}</p>`;
+    root.appendChild(intro);
+    root.appendChild(padWrap);
+  }
+  function askFirst(){
+    const pad = buildPinPad({title:'Créez votre code à 4 chiffres', onSubmit:(pin)=>{ firstPin=pin; askConfirm(); }});
+    render(pad, 'Sécurisez Boussole', "Vos données professionnelles seront chiffrées (AES-256) et protégées par ce code. Notez-le : il ne peut pas être récupéré en cas d'oubli.");
+  }
+  function askConfirm(){
+    const pad = buildPinPad({title:'Confirmez votre code', onSubmit: async (pin, wrapEl)=>{
+      if(pin!==firstPin){ shakeAndClear(wrapEl, 'Les codes ne correspondent pas.'); setTimeout(askFirst, 500); return; }
+      wrapEl.setError('Chiffrement en cours…');
+      await finishSetup(firstPin);
+    }});
+    render(pad, 'Confirmez', 'Ressaisissez les mêmes 4 chiffres.');
+  }
+  askFirst();
+}
+async function finishSetup(pin){
+  await createLock(pin);
+  const legacy = localStorage.getItem(LEGACY_DATA_KEY);
+  if(legacy){
+    try{ state = sanitizeImportedState(JSON.parse(legacy)); }catch(e){ state = seedDemoData(); }
+    localStorage.removeItem(LEGACY_DATA_KEY);
+  } else {
+    state = seedDemoData();
+  }
+  await encryptAndStore();
+  document.getElementById('securityScreen').classList.remove('active');
+  finishBoot();
+}
+
+/* --- Écran de verrouillage --- */
+function showLockScreen(){
+  const root = document.getElementById('securityScroll');
+  document.getElementById('securityScreen').classList.add('active');
+  root.innerHTML = '';
+  const cfg = loadSecurityConfig();
+  const now = Date.now();
+  if(cfg && cfg.lockedUntil && cfg.lockedUntil>now){
+    const secs = Math.ceil((cfg.lockedUntil-now)/1000);
+    const wait = document.createElement('div');
+    wait.className='sec-intro';
+    wait.innerHTML = `<h1>Trop de tentatives</h1><p>Pour protéger vos données, réessayez dans ${secs} seconde${secs>1?'s':''}.</p>`;
+    root.appendChild(wait);
+    setTimeout(showLockScreen, 1000);
+    return;
+  }
+  const intro = document.createElement('div');
+  intro.className = 'sec-intro';
+  intro.innerHTML = `<div class="brand-mark lg" style="margin:0 auto;"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0F1B2A"/><circle cx="32" cy="32" r="6" fill="#D4AF37"/><circle cx="32" cy="32" r="14" fill="none" stroke="#D4AF37" stroke-width="2" opacity="0.55"/><circle cx="32" cy="32" r="22" fill="none" stroke="#D4AF37" stroke-width="2" opacity="0.28"/></svg></div><h1>Boussole verrouillé</h1><p>Entrez votre code confidentiel pour continuer.</p>`;
+  root.appendChild(intro);
+  const pad = buildPinPad({title:'Code confidentiel', onSubmit: async (pin, wrapEl)=>{
+    try{
+      await unlockWithPin(pin);
+      document.getElementById('securityScreen').classList.remove('active');
+      finishBoot();
+    }catch(e){
+      const c = loadSecurityConfig();
+      c.failedAttempts = (c.failedAttempts||0)+1;
+      let msg = `Code incorrect (${c.failedAttempts}/5 tentatives).`;
+      if(c.failedAttempts>=5){
+        const backoff = Math.min(600, 30*Math.pow(2, c.failedAttempts-5));
+        c.lockedUntil = Date.now()+backoff*1000;
+        msg = 'Trop de tentatives. Veuillez patienter.';
+      }
+      saveSecurityConfig(c);
+      shakeAndClear(wrapEl, msg);
+      if(c.lockedUntil) setTimeout(showLockScreen, 300);
+    }
+  }});
+  root.appendChild(pad);
+  const forgot = document.createElement('button');
+  forgot.className='sec-link'; forgot.type='button'; forgot.textContent='Code oublié ?';
+  forgot.addEventListener('click', confirmResetAll);
+  root.appendChild(forgot);
+}
+function confirmResetAll(){
+  if(confirm("Réinitialiser Boussole effacera définitivement toutes les données chiffrées de cet appareil (aucune récupération possible sans sauvegarde). Continuer ?")){
+    localStorage.removeItem(SEC_KEY);
+    localStorage.removeItem(DATA_KEY);
+    localStorage.removeItem(LEGACY_DATA_KEY);
+    location.reload();
+  }
+}
+
+/* --- Changement de code --- */
+function startChangePin(){
+  const root = document.getElementById('securityScroll');
+  document.getElementById('securityScreen').classList.add('active');
+  root.innerHTML='';
+  const intro=document.createElement('div'); intro.className='sec-intro';
+  intro.innerHTML=`<h1>Changer le code</h1><p>Entrez votre code actuel pour continuer.</p>`;
+  root.appendChild(intro);
+  const pad = buildPinPad({title:'Code actuel', onSubmit: async (pin,wrapEl)=>{
+    const cfg = loadSecurityConfig();
+    try{
+      const testKey = await deriveKey(pin, cfg.salt);
+      const raw = JSON.parse(localStorage.getItem(DATA_KEY));
+      await crypto.subtle.decrypt({name:'AES-GCM', iv:b64decode(raw.iv)}, testKey, b64decode(raw.data));
+      askNewPin(cfg.autoLockMinutes);
+    }catch(e){ shakeAndClear(wrapEl, 'Code incorrect.'); }
+  }});
+  root.appendChild(pad);
+  const cancel=document.createElement('button'); cancel.className='sec-link'; cancel.type='button'; cancel.textContent='Annuler';
+  cancel.addEventListener('click', ()=>{ document.getElementById('securityScreen').classList.remove('active'); });
+  root.appendChild(cancel);
+
+  function askNewPin(autoLockMinutes){
+    let firstNew=null;
+    function step1(){
+      root.innerHTML='';
+      const i2=document.createElement('div'); i2.className='sec-intro'; i2.innerHTML=`<h1>Nouveau code</h1><p>Choisissez 4 chiffres.</p>`;
+      root.appendChild(i2);
+      root.appendChild(buildPinPad({title:'Nouveau code', onSubmit:(pin)=>{ firstNew=pin; step2(); }}));
+    }
+    function step2(){
+      root.innerHTML='';
+      const i2=document.createElement('div'); i2.className='sec-intro'; i2.innerHTML=`<h1>Confirmez</h1><p>Ressaisissez le nouveau code.</p>`;
+      root.appendChild(i2);
+      root.appendChild(buildPinPad({title:'Confirmez le nouveau code', onSubmit: async (pin,wrapEl)=>{
+        if(pin!==firstNew){ shakeAndClear(wrapEl,'Les codes ne correspondent pas.'); setTimeout(step1,500); return; }
+        await createLock(pin, autoLockMinutes);
+        await encryptAndStore();
+        document.getElementById('securityScreen').classList.remove('active');
+        showToast('Code modifié avec succès');
+      }}));
+    }
+    step1();
+  }
+}
+
+/* --- Verrouillage auto & manuel --- */
+let lastActivity = Date.now();
+['click','keydown','touchstart'].forEach(ev=>document.addEventListener(ev, ()=>{ lastActivity=Date.now(); }, {passive:true}));
+function checkAutoLock(){
+  if(!sessionKey) return;
+  const cfg = loadSecurityConfig();
+  const minutes = cfg && cfg.autoLockMinutes!=null ? cfg.autoLockMinutes : 5;
+  if(minutes<=0) return;
+  if(Date.now()-lastActivity > minutes*60000) lockNow();
+}
+function lockNow(){
+  sessionKey = null; sessionSalt = null; state = null;
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  if(recognition && listening){ try{ recognition.stop(); }catch(e){} }
+  assistantOpen=false; document.getElementById('assistantPanel').classList.remove('open');
+  tourActive=false; document.getElementById('tourOverlay').classList.remove('active');
+  assistantGreeted = false;
+  showLockScreen();
+}
+
+/* ===================== STATE ===================== */
+let state = null;
+let charts = {sales:null, margin:null, monthly:null};
+
+function uid(p){return p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);}
+function daysAgoOf(iso){return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);}
+function isoDaysAgo(n){const d = new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10);}
+function fmtFCFA(n){return Math.round(n).toLocaleString('fr-FR').replace(/,/g,' ') + ' FCFA';}
+function fmtDate(iso){return new Date(iso).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});}
+
+function seedDemoData(){
+  const products = [
+    {id:'p1', name:'Riz local', unit:'sac 25kg', category:'Alimentation', stock:12, reorder:15, cost:9000,  sell:11500, base:1.1, trend:'stable'},
+    {id:'p2', name:'Huile végétale', unit:'bidon 5L', category:'Alimentation', stock:38, reorder:20, cost:4500, sell:5800, base:2.3, trend:'up'},
+    {id:'p3', name:'Savon Ivoire', unit:'carton', category:'Hygiène', stock:5, reorder:12, cost:8000, sell:10500, base:1.3, trend:'stable'},
+    {id:'p4', name:'Sucre en poudre', unit:'sac 50kg', category:'Alimentation', stock:9, reorder:10, cost:27000, sell:32000, base:0.85, trend:'stable'},
+    {id:'p5', name:'Boissons gazeuses', unit:'casier', category:'Boissons', stock:24, reorder:15, cost:3000, sell:4300, base:2.8, trend:'down'},
+    {id:'p6', name:'Piles électriques', unit:'boîte', category:'Électronique', stock:44, reorder:10, cost:1200, sell:1800, base:0.12, trend:'stable'},
+  ];
+  const sales = [];
+  products.forEach(p=>{
+    for(let d=0; d<60; d++){
+      const week = Math.min(Math.floor(d/7), 6);
+      let factor = 1;
+      if(p.trend==='down') factor = 1 + 0.28*week;
+      if(p.trend==='up') factor = Math.max(0.65, 1 - 0.06*week);
+      const wave = Math.sin(d*1.7)*0.18 + Math.cos(d*0.9)*0.12;
+      const qty = Math.max(0, Math.round(p.base*factor + wave*p.base));
+      if(qty>0) sales.push({id:uid('s'), productId:p.id, qty, unitPrice:p.sell, date:isoDaysAgo(d)});
+    }
+  });
+  const clients = [
+    {id:'c1', name:'Kouassi Distribution', phone:'2250700000001', amount:250000, invoiceDate:isoDaysAgo(52), paid:false},
+    {id:'c2', name:'Traoré & Fils', phone:'2250700000002', amount:95000, invoiceDate:isoDaysAgo(18), paid:false},
+    {id:'c3', name:'Coopérative Anonkoi', phone:'2250700000003', amount:60000, invoiceDate:isoDaysAgo(7), paid:false},
+    {id:'c4', name:'Diallo Market', phone:'2250700000004', amount:120000, invoiceDate:isoDaysAgo(30), paid:true},
+  ];
+  const suppliers = [
+    {id:'f1', name:'Grossiste Adjamé Vivres', phone:'2250700000010'},
+    {id:'f2', name:'Distributeur CIDCO', phone:'2250700000011'},
+  ];
+  return {businessName:'Mon Entreprise', products, sales, clients, suppliers, monthlyExpenses:0, lastSync:new Date().toISOString()};
+}
+
+/* Validation stricte des données importées ou migrées — empêche tout champ hostile ou malformé de corrompre l'application */
+function sanitizeImportedState(data){
+  const clean = {businessName:'Mon Entreprise', products:[], sales:[], clients:[], suppliers:[], monthlyExpenses:0, lastSync:new Date().toISOString()};
+  if(data && typeof data.businessName==='string') clean.businessName = data.businessName.slice(0,80) || 'Mon Entreprise';
+  const num = (v,min)=> (typeof v==='number'||typeof v==='string') && isFinite(+v) ? Math.max(min, +v) : min;
+  clean.monthlyExpenses = data ? num(data.monthlyExpenses,0) : 0;
+  if(data && Array.isArray(data.products)){
+    clean.products = data.products.filter(p=>p && typeof p.name==='string').slice(0,2000).map(p=>({
+      id: typeof p.id==='string' && p.id ? p.id.slice(0,60) : uid('p'),
+      name: String(p.name).slice(0,80),
+      unit: String(p.unit||'').slice(0,40),
+      category: String(p.category||'Général').slice(0,40),
+      stock: num(p.stock,0), reorder: num(p.reorder,0), cost: num(p.cost,0), sell: num(p.sell,0),
+    }));
+  }
+  const validIds = new Set(clean.products.map(p=>p.id));
+  if(data && Array.isArray(data.sales)){
+    clean.sales = data.sales.filter(s=>s && validIds.has(s.productId)).slice(0,20000).map(s=>({
+      id: typeof s.id==='string' && s.id ? s.id.slice(0,60) : uid('s'),
+      productId: s.productId,
+      qty: num(s.qty,0), unitPrice: num(s.unitPrice,0),
+      date: (typeof s.date==='string' && !isNaN(Date.parse(s.date))) ? s.date : new Date().toISOString(),
+    }));
+  }
+  if(data && Array.isArray(data.clients)){
+    clean.clients = data.clients.filter(c=>c && typeof c.name==='string').slice(0,5000).map(c=>({
+      id: typeof c.id==='string' && c.id ? c.id.slice(0,60) : uid('c'),
+      name: String(c.name).slice(0,80),
+      phone: String(c.phone||'').replace(/\D/g,'').slice(0,20),
+      amount: num(c.amount,0),
+      invoiceDate: (typeof c.invoiceDate==='string' && !isNaN(Date.parse(c.invoiceDate))) ? c.invoiceDate : new Date().toISOString(),
+      paid: !!c.paid,
+    }));
+  }
+  if(data && Array.isArray(data.suppliers)){
+    clean.suppliers = data.suppliers.filter(f=>f && typeof f.name==='string').slice(0,1000).map(f=>({
+      id: typeof f.id==='string' && f.id ? f.id.slice(0,60) : uid('f'),
+      name: String(f.name).slice(0,80),
+      phone: String(f.phone||'').replace(/\D/g,'').slice(0,20),
+    }));
+  }
+  return clean;
+}
+
+async function saveState(){
+  state.lastSync = new Date().toISOString();
+  try{ await encryptAndStore(); updateSyncUI(true); }
+  catch(e){ updateSyncUI(false); }
+}
+
+/* ===================== COMPUTATIONS ===================== */
+function salesFor(productId, startD, endD){
+  return state.sales.filter(s=>{
+    if(productId && s.productId!==productId) return false;
+    const da = daysAgoOf(s.date);
+    return da>=startD && da<=endD;
+  });
+}
+function revenueProfit(list){
+  let revenue=0, profit=0;
+  list.forEach(s=>{
+    const p = state.products.find(x=>x.id===s.productId);
+    revenue += s.qty*s.unitPrice;
+    if(p) profit += s.qty*(s.unitPrice - p.cost);
+  });
+  return {revenue, profit};
+}
+function dailyConsumption(productId, window=14){
+  const list = salesFor(productId, 0, window-1);
+  const total = list.reduce((a,s)=>a+s.qty,0);
+  return total/window;
+}
+function daysUntilStockout(p){
+  const c = dailyConsumption(p.id);
+  if(c<=0) return Infinity;
+  return p.stock/c;
+}
+function weeklyTotals(productId, weeks=4){
+  const out=[];
+  for(let w=0; w<weeks; w++){
+    const list = salesFor(productId, w*7, w*7+6);
+    out.push(list.reduce((a,s)=>a+s.qty,0));
+  }
+  return out;
+}
+function last30DailySeries(){
+  const days=[];
+  for(let d=29; d>=0; d--){
+    const list = salesFor(null, d, d);
+    const {revenue} = revenueProfit(list);
+    days.push({label: new Date(isoDaysAgo(d)).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}), value: revenue});
+  }
+  return days;
+}
+function weeklyMarginSeries(weeks=6){
+  const out=[];
+  for(let w=weeks-1; w>=0; w--){
+    const list = salesFor(null, w*7, w*7+6);
+    const {revenue, profit} = revenueProfit(list);
+    out.push({label:'S-'+w, margin: revenue>0 ? (profit/revenue*100) : 0});
+  }
+  return out;
+}
+function stockValue(){ return state.products.reduce((a,p)=>a+p.stock*p.cost,0); }
+function totalUnitsInStock(){ return state.products.reduce((a,p)=>a+p.stock,0); }
+function topProducts(n=5, windowDays=30){
+  return state.products
+    .map(p=>({p, qty: salesFor(p.id,0,windowDays-1).reduce((a,s)=>a+s.qty,0)}))
+    .sort((a,b)=>b.qty-a.qty).slice(0,n);
+}
+function leastProducts(n=5, windowDays=30){
+  return state.products
+    .map(p=>({p, qty: salesFor(p.id,0,windowDays-1).reduce((a,s)=>a+s.qty,0)}))
+    .sort((a,b)=>a.qty-b.qty).slice(0,n);
+}
+function categoryStats(windowDays=30){
+  const map = {};
+  state.products.forEach(p=>{
+    const cat = p.category || 'Général';
+    if(!map[cat]) map[cat] = {category:cat, revenue:0, profit:0};
+    salesFor(p.id,0,windowDays-1).forEach(s=>{
+      map[cat].revenue += s.qty*s.unitPrice;
+      map[cat].profit += s.qty*(s.unitPrice-p.cost);
+    });
+  });
+  return Object.values(map).sort((a,b)=>b.profit-a.profit);
+}
+function monthlySeries(months=6){
+  const now = new Date();
+  const buckets = [];
+  for(let i=months-1; i>=0; i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    buckets.push({label:d.toLocaleDateString('fr-FR',{month:'short',year:'2-digit'}), year:d.getFullYear(), month:d.getMonth(), revenue:0, profit:0});
+  }
+  state.sales.forEach(s=>{
+    const sd = new Date(s.date);
+    const b = buckets.find(x=>x.year===sd.getFullYear() && x.month===sd.getMonth());
+    if(b){
+      const p = state.products.find(x=>x.id===s.productId);
+      b.revenue += s.qty*s.unitPrice;
+      if(p) b.profit += s.qty*(s.unitPrice-p.cost);
+    }
+  });
+  return buckets;
+}
+/* Prévision simple par régression linéaire sur le CA quotidien — clairement une estimation, pas un modèle prédictif avancé */
+function forecastNextWeek(){
+  const series = last30DailySeries();
+  const n = series.length;
+  if(n<7) return null;
+  const ys = series.map(s=>s.value);
+  const xMean = (n-1)/2;
+  const yMean = ys.reduce((a,b)=>a+b,0)/n;
+  let num=0, den=0;
+  for(let i=0;i<n;i++){ num += (i-xMean)*(ys[i]-yMean); den += (i-xMean)*(i-xMean); }
+  const slope = den!==0 ? num/den : 0;
+  const intercept = yMean - slope*xMean;
+  let forecastSum = 0;
+  for(let i=n; i<n+7; i++) forecastSum += Math.max(0, slope*i+intercept);
+  return {forecastSum, trendPerDay:slope};
+}
+
+function generateInsights(){
+  const insights = [];
+  state.products.forEach(p=>{
+    const days = daysUntilStockout(p);
+    if(days <= 5){
+      insights.push({sev:'critical', icon:'alert',
+        title:`Rupture de stock imminente : ${p.name}`,
+        desc:`Au rythme actuel des ventes, vous allez manquer de ${p.name.toLowerCase()} dans environ ${Math.max(0,Math.round(days))} jour${days>=2?'s':''}. Stock restant : ${p.stock} ${p.unit}.`,
+        action:'Voir le stock', view:'stock'});
+    } else if(p.stock <= p.reorder){
+      insights.push({sev:'warning', icon:'alert',
+        title:`Stock sous le seuil d'alerte : ${p.name}`,
+        desc:`${p.stock} ${p.unit} restants, en dessous du seuil de réapprovisionnement (${p.reorder}).`,
+        action:'Voir le stock', view:'stock'});
+    }
+  });
+  const cur = revenueProfit(salesFor(null,0,29));
+  const prev = revenueProfit(salesFor(null,30,59));
+  if(prev.profit>0){
+    const change = (cur.profit - prev.profit)/prev.profit*100;
+    if(change <= -8){
+      insights.push({sev:'critical', icon:'trendDown',
+        title:`Bénéfice en baisse de ${Math.abs(change).toFixed(0)}%`,
+        desc:`Votre bénéfice des 30 derniers jours (${fmtFCFA(cur.profit)}) est en baisse par rapport aux 30 jours précédents (${fmtFCFA(prev.profit)}).`,
+        action:null});
+    } else if(change >= 8){
+      insights.push({sev:'opportunity', icon:'trendUp',
+        title:`Bénéfice en hausse de ${change.toFixed(0)}%`,
+        desc:`Votre bénéfice progresse par rapport à la période précédente : ${fmtFCFA(cur.profit)} contre ${fmtFCFA(prev.profit)}.`,
+        action:null});
+    }
+  }
+  state.clients.filter(c=>!c.paid).forEach(c=>{
+    const da = daysAgoOf(c.invoiceDate);
+    if(da>45){
+      insights.push({sev:'critical', icon:'clock',
+        title:`Facture impayée depuis ${da} jours`,
+        desc:`${c.name} n'a pas réglé sa facture de ${fmtFCFA(c.amount)} émise le ${fmtDate(c.invoiceDate)}.`,
+        action:'Relancer le client', view:'clients'});
+    } else if(da>30){
+      insights.push({sev:'warning', icon:'clock',
+        title:`Paiement en retard : ${c.name}`,
+        desc:`Facture de ${fmtFCFA(c.amount)} impayée depuis ${da} jours.`,
+        action:'Voir les clients', view:'clients'});
+    }
+  });
+  state.products.forEach(p=>{
+    const w = weeklyTotals(p.id, 4);
+    if(w[0] < w[1] && w[1] < w[2] && w[2] <= w[3] && w[3]>0){
+      insights.push({sev:'warning', icon:'trendDown',
+        title:`Ventes en baisse depuis 3 semaines : ${p.name}`,
+        desc:`Les ventes de ${p.name.toLowerCase()} diminuent chaque semaine depuis 3 semaines (${w[3]} → ${w[2]} → ${w[1]} → ${w[0]} unités).`,
+        action:'Voir les ventes', view:'ventes'});
+    }
+  });
+  let best=null, bestScore=-Infinity;
+  state.products.forEach(p=>{
+    const marginPct = (p.sell-p.cost)/p.sell*100;
+    const vol = salesFor(p.id,0,29).reduce((a,s)=>a+s.qty,0);
+    if(vol>=15 && marginPct<25){
+      const score = vol - marginPct;
+      if(score>bestScore){bestScore=score; best=p; best.vol=vol; best.marginPct=marginPct;}
+    }
+  });
+  if(best){
+    const extra = best.sell*0.05*best.vol;
+    insights.push({sev:'opportunity', icon:'bulb',
+      title:`Marge faible et bon volume : ${best.name}`,
+      desc:`Ce produit se vend bien (${best.vol} unités / 30 jours) mais avec une marge de seulement ${best.marginPct.toFixed(0)}%. Une hausse de prix de 5% apporterait environ ${fmtFCFA(extra)} de marge sur un mois, à volume constant.`,
+      action:'Ouvrir le simulateur', view:'simulateur'});
+  }
+  const order = {critical:0, warning:1, opportunity:2, info:3};
+  insights.sort((a,b)=>order[a.sev]-order[b.sev]);
+  return insights;
+}
+
+/* ===================== NAV ===================== */
+const NAV = [
+  {id:'dashboard', label:'Tableau de bord', icon:'dashboard'},
+  {id:'stock', label:'Stock', icon:'stock'},
+  {id:'ventes', label:'Ventes', icon:'ventes'},
+  {id:'clients', label:'Clients', icon:'clients'},
+  {id:'simulateur', label:'Simulateur', icon:'simulateur'},
+  {id:'parametres', label:'Paramètres', icon:'parametres'},
+];
+let currentView = 'dashboard';
+
+function renderNav(){
+  function badgeFor(id){
+    if(id==='stock') return state.products.filter(p=>daysUntilStockout(p)<=5 || p.stock<=p.reorder).length;
+    if(id==='clients') return state.clients.filter(c=>!c.paid && daysAgoOf(c.invoiceDate)>45).length;
+    return 0;
+  }
+  const items = NAV.map(n=>{
+    const b = badgeFor(n.id);
+    return `<button class="navbtn ${currentView===n.id?'active':''}" data-nav="${n.id}">${ICONS[n.icon]}<span>${n.label}</span>${b>0?`<span class="badge">${b}</span>`:''}</button>`;
+  }).join('');
+  document.getElementById('sidebar').innerHTML = items + `<div class="sidebar-foot">Boussole — ERP intelligent<br>© DataProSolutions<br>Direction : Koffi Kouame Jean Yves</div>`;
+  document.getElementById('bottomnav').innerHTML = items;
+}
+
+function switchView(id){
+  currentView = id;
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.dataset.view===id));
+  renderNav();
+  if(id==='dashboard') renderDashboard();
+  if(id==='stock') renderStock();
+  if(id==='ventes') renderVentes();
+  if(id==='clients') renderClients();
+  if(id==='simulateur') renderSimulateur();
+  if(id==='parametres') renderParametres();
+  window.scrollTo({top:0, behavior:'instant'});
+}
+
+/* ===================== DASHBOARD ===================== */
+function rankedListHTML(items, opts){
+  opts = opts||{};
+  const usable = items.filter(i=>i.value>0);
+  if(usable.length===0) return `<div class="ranked-empty">${opts.emptyText||'Aucune donnée pour le moment.'}</div>`;
+  const max = Math.max(...items.map(i=>i.value), 1);
+  return `<div class="ranked-list">${items.slice(0,opts.limit||5).map((it,idx)=>`
+    <div class="ranked-row">
+      <div class="idx">${idx+1}</div>
+      <div>
+        <div class="name">${escapeHTML(it.name)}</div>
+        <div class="bar-wrap"><div class="bar" style="width:${Math.max(3,it.value/max*100)}%"></div></div>
+      </div>
+      <div class="val">${opts.formatValue ? opts.formatValue(it.value) : it.value}</div>
+    </div>`).join('')}</div>`;
+}
+
+function renderDashboard(){
+  const today = revenueProfit(salesFor(null,0,0));
+  const week = revenueProfit(salesFor(null,0,6));
+  const cur = revenueProfit(salesFor(null,0,29));
+  const prev = revenueProfit(salesFor(null,30,59));
+  const year = revenueProfit(salesFor(null,0,364));
+  const marginPct = cur.revenue>0 ? cur.profit/cur.revenue*100 : 0;
+  const prevMarginPct = prev.revenue>0 ? prev.profit/prev.revenue*100 : 0;
+  const revDelta = prev.revenue>0 ? (cur.revenue-prev.revenue)/prev.revenue*100 : 0;
+  const profitDelta = prev.profit>0 ? (cur.profit-prev.profit)/prev.profit*100 : 0;
+  const netMarginPct = cur.revenue>0 ? (cur.profit-(state.monthlyExpenses||0))/cur.revenue*100 : 0;
+  const criticalStock = state.products.filter(p=>daysUntilStockout(p)<=5 || p.stock<=p.reorder).length;
+  const ruptureCount = state.products.filter(p=>p.stock<=0).length;
+  const procheCount = state.products.filter(p=>p.stock>0 && (daysUntilStockout(p)<=5 || p.stock<=p.reorder)).length;
+  const unpaid = state.clients.filter(c=>!c.paid);
+  const insights = generateInsights();
+  const salesCountCur = salesFor(null,0,29).length;
+  const salesCountPrev = salesFor(null,30,59).length;
+  const salesCountDelta = salesCountPrev>0 ? (salesCountCur-salesCountPrev)/salesCountPrev*100 : 0;
+  const monthly = monthlySeries(6);
+  const forecast = forecastNextWeek();
+
+  function deltaHTML(v, label){
+    if(Math.abs(v)<1) return `<span class="kpi-delta flat">— stable ${label||'vs période précédente'}</span>`;
+    const cls = v>0?'up':'down';
+    const icon = v>0?ICONS.trendUp:ICONS.trendDown;
+    return `<span class="kpi-delta ${cls}">${icon} ${v>0?'+':''}${v.toFixed(0)}% ${label||'vs période précédente'}</span>`;
+  }
+
+  document.getElementById('view-dashboard').innerHTML = `
+    <div class="hero card" id="tourHero">
+      <svg class="hero-radar" viewBox="0 0 220 220"><circle cx="110" cy="110" r="40" stroke-width="1"/><circle cx="110" cy="110" r="70" stroke-width="1"/><circle cx="110" cy="110" r="100" stroke-width="1"/>
+        <g class="hero-sweep"><path d="M110 110 L110 10 A100 100 0 0 1 180 40 Z" fill="url(#g1)"/></g>
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#D4AF37" stop-opacity="0.35"/><stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/></linearGradient></defs>
+      </svg>
+      <h1>Bonjour, ${escapeHTML(state.businessName)}</h1>
+      <p>Voici ce que Boussole a repéré pour vous aujourd'hui.</p>
+    </div>
+
+    <div class="bi-grid">
+      <div class="area-kpis kpi-strip" id="tourKPI">
+        <div class="card kpi"><div class="kpi-label">CA aujourd'hui</div><div class="kpi-value">${fmtFCFA(today.revenue)}</div><span class="kpi-delta flat">${salesFor(null,0,0).length} vente(s)</span></div>
+        <div class="card kpi"><div class="kpi-label">CA cette semaine</div><div class="kpi-value">${fmtFCFA(week.revenue)}</div><span class="kpi-delta flat">7 derniers jours</span></div>
+        <div class="card kpi"><div class="kpi-label">CA ce mois (30j)</div><div class="kpi-value">${fmtFCFA(cur.revenue)}</div>${deltaHTML(revDelta)}</div>
+        <div class="card kpi"><div class="kpi-label">CA sur 12 mois</div><div class="kpi-value">${fmtFCFA(year.revenue)}</div><span class="kpi-delta flat">Cumul disponible</span></div>
+        <div class="card kpi"><div class="kpi-label">Bénéfice brut (30j)</div><div class="kpi-value">${fmtFCFA(cur.profit)}</div>${deltaHTML(profitDelta)}</div>
+        <div class="card kpi"><div class="kpi-label">Marge nette (30j)</div><div class="kpi-value">${netMarginPct.toFixed(1)}%</div><span class="kpi-delta flat">Marge brute : ${marginPct.toFixed(1)}%</span></div>
+        <div class="card kpi"><div class="kpi-label">Valeur du stock</div><div class="kpi-value">${fmtFCFA(stockValue())}</div><span class="kpi-delta flat">Au prix d'achat</span></div>
+        <div class="card kpi"><div class="kpi-label">Alertes actives</div><div class="kpi-value">${criticalStock + unpaid.filter(c=>daysAgoOf(c.invoiceDate)>45).length}</div><span class="kpi-delta flat">${criticalStock} stock · ${unpaid.length} impayé(s)</span></div>
+      </div>
+
+      <div class="area-counts stat-row" style="margin-bottom:0;">
+        <div class="stat-chip"><div class="n">${state.products.length}</div><div class="l">Articles</div></div>
+        <div class="stat-chip"><div class="n">${totalUnitsInStock()}</div><div class="l">Unités en stock</div></div>
+        <div class="stat-chip"><div class="n">${state.clients.length}</div><div class="l">Clients</div></div>
+        <div class="stat-chip"><div class="n">${(state.suppliers||[]).length}</div><div class="l">Fournisseurs</div></div>
+        <div class="stat-chip"><div class="n">${state.sales.length}</div><div class="l">Ventes totales</div></div>
+      </div>
+
+      <div class="area-alerts card">
+        <div class="insight-head-row">
+          <h3>Ce que Boussole observe</h3>
+          ${insights.length>0?`<button class="iconbtn" data-action="speak-insights" title="Écouter les alertes">${ICONS.speaker}</button>`:''}
+        </div>
+        <div class="alerts-panel" id="tourInsights" style="margin-top:10px;">
+        ${insights.length===0 ? `<div class="insight-empty">Aucune alerte pour le moment — tout semble sous contrôle.</div>` :
+          insights.map(i=>`
+          <div class="insight ${i.sev}">
+            <div class="insight-icon">${ICONS[i.icon]}</div>
+            <div class="insight-body">
+              <div class="t">${escapeHTML(i.title)}</div>
+              <div class="d">${escapeHTML(i.desc)}</div>
+              ${i.action?`<a class="insight-action" data-nav="${i.view}">${i.action} →</a>`:''}
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="area-chart1 card">
+        <h3>Chiffre d'affaires quotidien</h3>
+        <div class="sub">30 derniers jours</div>
+        <div class="chart-wrap" style="height:180px;"><canvas id="salesChart"></canvas></div>
+      </div>
+
+      <div class="area-chart2 card">
+        <h3>Marge (%)</h3>
+        <div class="sub">6 dernières semaines</div>
+        <div class="chart-wrap" style="height:180px;"><canvas id="marginChart"></canvas></div>
+      </div>
+
+      <div class="area-prod card">
+        <h3>Produits</h3>
+        <div class="sub">Quantité vendue — 30 derniers jours</div>
+        <div class="split-card" style="margin-top:10px;">
+          <div class="half">
+            <h4>Top 5 vendus</h4>
+            ${rankedListHTML(topProducts(5,30).map(x=>({name:x.p.name, value:x.qty})), {formatValue:v=>v+' u.'})}
+          </div>
+          <div class="half">
+            <h4>Moins vendus</h4>
+            ${rankedListHTML(leastProducts(5,30).map(x=>({name:x.p.name, value:Math.max(x.qty,0.0001)})), {formatValue:(v)=>Math.round(v)+' u.', emptyText:'Pas assez de données.'})}
+          </div>
+        </div>
+      </div>
+
+      <div class="area-cat card">
+        <h3>Catégories &amp; stock</h3>
+        <div class="sub">Bénéfice par catégorie — 30 derniers jours</div>
+        ${rankedListHTML(categoryStats(30).map(c=>({name:c.category, value:c.profit})), {formatValue:v=>fmtFCFA(v), limit:4})}
+        <div class="stat-row" style="margin:12px 0 0;">
+          <div class="stat-chip"><div class="n" style="color:var(--wine);">${ruptureCount}</div><div class="l">Rupture</div></div>
+          <div class="stat-chip"><div class="n" style="color:var(--amber);">${procheCount}</div><div class="l">Proche</div></div>
+          <div class="stat-chip"><div class="n" style="color:var(--emerald);">${state.products.length-ruptureCount-procheCount}</div><div class="l">Sain</div></div>
+        </div>
+      </div>
+
+      <div class="area-cmp card">
+        <h3>Comparaison &amp; prévision</h3>
+        <div class="sub">30 derniers jours vs 30 jours précédents</div>
+        <table class="compare-table">
+          <tr><td class="lbl">Chiffre d'affaires</td><td class="num">${fmtFCFA(cur.revenue)}</td><td class="delta">${deltaHTML(revDelta,'')}</td></tr>
+          <tr><td class="lbl">Bénéfice</td><td class="num">${fmtFCFA(cur.profit)}</td><td class="delta">${deltaHTML(profitDelta,'')}</td></tr>
+          <tr><td class="lbl">Marge</td><td class="num">${marginPct.toFixed(1)}%</td><td class="delta">${deltaHTML(marginPct-prevMarginPct,'')}</td></tr>
+          <tr><td class="lbl">Ventes</td><td class="num">${salesCountCur}</td><td class="delta">${deltaHTML(salesCountDelta,'')}</td></tr>
+        </table>
+        <div class="forecast-card" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+          <div>
+            <div class="fnum" style="font-size:19px;">${forecast?fmtFCFA(forecast.forecastSum):'—'}</div>
+            <div class="flabel">CA estimé — 7 prochains jours<span class="forecast-badge">Estimation</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="area-chart3 card">
+        <h3>Évolution mensuelle du chiffre d'affaires</h3>
+        <div class="sub">6 derniers mois</div>
+        <div class="chart-wrap" style="height:170px;"><canvas id="monthlyChart"></canvas></div>
+      </div>
+    </div>
+  `;
+  drawCharts(monthly);
+}
+
+function drawCharts(monthly){
+  const wraps = ['salesChart','marginChart','monthlyChart'].map(id=>document.getElementById(id)).filter(Boolean).map(c=>c.closest('.chart-wrap'));
+  if(typeof Chart === 'undefined'){
+    wraps.forEach(w=>{ if(w) w.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11.5px;color:var(--text-faint);text-align:center;padding:0 12px;">Graphique indisponible (bibliothèque non chargée — vérifiez la connexion internet).</div>'; });
+    return;
+  }
+  // On attend une frame avant de construire les graphiques : juste après un innerHTML
+  // dans une grille CSS, le canvas peut encore mesurer une largeur de 0px si Chart.js
+  // le lit trop tôt, ce qui produisait des graphiques vides silencieux.
+  requestAnimationFrame(()=>{
+    const gridColor = document.body.classList.contains('theme-light') ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.05)';
+    const tickColor = document.body.classList.contains('theme-light') ? '#8B92A0' : '#5C6B80';
+    const series = last30DailySeries();
+    const ctx1 = document.getElementById('salesChart');
+    if(ctx1){
+      if(charts.sales) charts.sales.destroy();
+      charts.sales = new Chart(ctx1, {
+        type:'line',
+        data:{labels:series.map(s=>s.label), datasets:[{data:series.map(s=>s.value), borderColor:'#D4AF37', backgroundColor:'rgba(212,175,55,.12)', fill:true, tension:.35, pointRadius:0, borderWidth:2}]},
+        options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{
+          x:{ticks:{color:tickColor, maxTicksLimit:6, font:{size:10}}, grid:{display:false}},
+          y:{ticks:{color:tickColor, font:{size:10}, callback:v=>(v/1000)+'k'}, grid:{color:gridColor}}
+        }}
+      });
+    }
+    const wm = weeklyMarginSeries(6).reverse();
+    const ctx2 = document.getElementById('marginChart');
+    if(ctx2){
+      if(charts.margin) charts.margin.destroy();
+      charts.margin = new Chart(ctx2, {
+        type:'bar',
+        data:{labels:wm.map(w=>w.label), datasets:[{data:wm.map(w=>w.margin.toFixed(1)), backgroundColor:'#33C08A', borderRadius:5, maxBarThickness:26}]},
+        options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{
+          x:{ticks:{color:tickColor, font:{size:10}}, grid:{display:false}},
+          y:{ticks:{color:tickColor, font:{size:10}, callback:v=>v+'%'}, grid:{color:gridColor}}
+        }}
+      });
+    }
+    const ms = monthly || monthlySeries(6);
+    const ctx3 = document.getElementById('monthlyChart');
+    if(ctx3){
+      if(charts.monthly) charts.monthly.destroy();
+      charts.monthly = new Chart(ctx3, {
+        type:'bar',
+        data:{labels:ms.map(m=>m.label), datasets:[{data:ms.map(m=>m.revenue), backgroundColor:'#D4AF37', borderRadius:6, maxBarThickness:40}]},
+        options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{
+          x:{ticks:{color:tickColor, font:{size:10.5}}, grid:{display:false}},
+          y:{ticks:{color:tickColor, font:{size:10}, callback:v=>(v/1000)+'k'}, grid:{color:gridColor}}
+        }}
+      });
+    }
+  });
+}
+
+/* ===================== STOCK ===================== */
+function renderStock(){
+  const rows = state.products.map(p=>{
+    const days = daysUntilStockout(p);
+    let tag;
+    if(days<=5) tag = `<span class="tag crit">${ICONS.alert} ${Math.round(days)} j</span>`;
+    else if(p.stock<=p.reorder) tag = `<span class="tag warn">Sous le seuil</span>`;
+    else tag = `<span class="tag ok">OK</span>`;
+    const conso = dailyConsumption(p.id).toFixed(1);
+    return `<tr>
+      <td><div class="pname">${escapeHTML(p.name)}</div><div class="psub">${escapeHTML(p.unit)}</div><span class="category-pill">${escapeHTML(p.category||'Général')}</span></td>
+      <td class="mono">${p.stock}</td>
+      <td class="mono">${p.reorder}</td>
+      <td class="mono">${conso}/j</td>
+      <td>${tag}</td>
+      <td class="mono">${fmtFCFA(p.cost)}</td>
+      <td class="mono">${fmtFCFA(p.sell)}</td>
+      <td><div class="row-actions">
+        <button class="iconbtn" data-action="edit-product" data-id="${p.id}">${ICONS.edit}</button>
+        <button class="iconbtn" data-action="delete-product" data-id="${p.id}">${ICONS.trash}</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('view-stock').innerHTML = `
+    <div class="section-head">
+      <div><h1>Stock</h1><p>${state.products.length} produits suivis</p></div>
+      <button class="btn primary" data-action="new-product">${ICONS.plus} Ajouter un produit</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Produit</th><th>Stock</th><th>Seuil</th><th>Vente moy.</th><th>Statut</th><th>Prix achat</th><th>Prix vente</th><th></th></tr></thead>
+      <tbody>${rows || '<tr class="empty-row"><td colspan="8">Aucun produit. Ajoutez-en un pour commencer.</td></tr>'}</tbody>
+    </table></div>
+  `;
+}
+
+/* ===================== VENTES ===================== */
+function renderVentes(){
+  const recent = [...state.sales].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,25);
+  const rows = recent.map(s=>{
+    const p = state.products.find(x=>x.id===s.productId);
+    return `<tr>
+      <td class="mono">${fmtDate(s.date)}</td>
+      <td><div class="pname">${p?escapeHTML(p.name):'—'}</div></td>
+      <td class="mono">${s.qty}</td>
+      <td class="mono">${fmtFCFA(s.unitPrice)}</td>
+      <td class="mono">${fmtFCFA(s.qty*s.unitPrice)}</td>
+      <td><button class="iconbtn" data-action="delete-sale" data-id="${s.id}">${ICONS.trash}</button></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('view-ventes').innerHTML = `
+    <div class="section-head">
+      <div><h1>Ventes</h1><p>Journal des ventes enregistrées</p></div>
+      <button class="btn primary" data-action="new-sale">${ICONS.plus} Enregistrer une vente</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Produit</th><th>Qté</th><th>Prix unitaire</th><th>Total</th><th></th></tr></thead>
+      <tbody>${rows || '<tr class="empty-row"><td colspan="6">Aucune vente enregistrée.</td></tr>'}</tbody>
+    </table></div>
+  `;
+}
+
+/* ===================== CLIENTS ===================== */
+function renderClients(){
+  const rows = state.clients.map(c=>{
+    const da = daysAgoOf(c.invoiceDate);
+    let tag;
+    if(c.paid) tag = `<span class="tag ok">${ICONS.check} Payé</span>`;
+    else if(da>45) tag = `<span class="tag crit">En retard · ${da} j</span>`;
+    else if(da>30) tag = `<span class="tag warn">${da} j</span>`;
+    else tag = `<span class="tag ok">${da} j</span>`;
+    return `<tr>
+      <td><div class="pname">${escapeHTML(c.name)}</div></td>
+      <td class="mono">${fmtFCFA(c.amount)}</td>
+      <td class="mono">${fmtDate(c.invoiceDate)}</td>
+      <td>${tag}</td>
+      <td><div class="row-actions">
+        ${!c.paid && c.phone?`<button class="iconbtn" data-action="whatsapp-relance" data-id="${c.id}" title="Relancer sur WhatsApp">${ICONS.whatsapp}</button>`:''}
+        ${!c.paid?`<button class="iconbtn" data-action="mark-paid" data-id="${c.id}">${ICONS.check}</button>`:''}
+        <button class="iconbtn" data-action="delete-client" data-id="${c.id}">${ICONS.trash}</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('view-clients').innerHTML = `
+    <div class="section-head">
+      <div><h1>Clients &amp; Factures</h1><p>${state.clients.filter(c=>!c.paid).length} facture(s) en attente</p></div>
+      <button class="btn primary" data-action="new-client">${ICONS.plus} Ajouter une facture</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Client</th><th>Montant</th><th>Date facture</th><th>Statut</th><th></th></tr></thead>
+      <tbody>${rows || '<tr class="empty-row"><td colspan="5">Aucun client enregistré.</td></tr>'}</tbody>
+    </table></div>
+  `;
+}
+
+/* ===================== SIMULATEUR ===================== */
+function renderSimulateur(){
+  const opts = state.products.map(p=>`<option value="${p.id}">${escapeHTML(p.name)}</option>`).join('');
+  document.getElementById('view-simulateur').innerHTML = `
+    <div class="section-head"><div><h1>Simulateur de prix</h1><p>Estimez l'impact d'un changement de prix sur votre marge</p></div></div>
+    <div class="sim-grid">
+      <div class="card">
+        <div class="field"><label>Produit</label><select id="simProduct">${opts}</select></div>
+        <div class="field">
+          <label>Variation de prix : <span class="slider-val" id="simPctLabel">+5%</span></label>
+          <div class="slider-row"><input type="range" id="simPct" min="-20" max="30" value="5" step="1"></div>
+        </div>
+        <p class="sim-note">Estimation basée sur le volume de vente moyen des 30 derniers jours, à volume constant. En pratique, une hausse de prix trop forte peut réduire la demande — ajustez progressivement et observez l'effet réel sur vos ventes.</p>
+      </div>
+      <div class="card sim-result" id="simResult"></div>
+    </div>
+  `;
+  document.getElementById('simProduct').addEventListener('change', updateSimulator);
+  document.getElementById('simPct').addEventListener('input', updateSimulator);
+  updateSimulator();
+}
+function updateSimulator(){
+  const pid = document.getElementById('simProduct').value;
+  const pct = parseInt(document.getElementById('simPct').value,10);
+  document.getElementById('simPctLabel').textContent = (pct>=0?'+':'')+pct+'%';
+  const p = state.products.find(x=>x.id===pid);
+  if(!p) return;
+  const vol = salesFor(p.id,0,29).reduce((a,s)=>a+s.qty,0);
+  const newPrice = p.sell*(1+pct/100);
+  const oldMarginUnit = p.sell-p.cost;
+  const newMarginUnit = newPrice-p.cost;
+  const oldMonthly = oldMarginUnit*vol;
+  const newMonthly = newMarginUnit*vol;
+  const delta = newMonthly-oldMonthly;
+  document.getElementById('simResult').innerHTML = `
+    <div class="sim-line"><span class="l">Prix actuel</span><span class="v">${fmtFCFA(p.sell)}</span></div>
+    <div class="sim-line"><span class="l">Nouveau prix</span><span class="v">${fmtFCFA(newPrice)}</span></div>
+    <div class="sim-line"><span class="l">Marge unitaire actuelle</span><span class="v">${fmtFCFA(oldMarginUnit)}</span></div>
+    <div class="sim-line"><span class="l">Nouvelle marge unitaire</span><span class="v">${fmtFCFA(newMarginUnit)}</span></div>
+    <div class="sim-line"><span class="l">Volume mensuel (30j)</span><span class="v">${vol} ${escapeHTML(p.unit)}</span></div>
+    <div class="sim-delta ${delta<0?'neg':''}">
+      <div style="font-size:11.5px;color:var(--text-dim);margin-bottom:4px;">Impact estimé sur la marge mensuelle</div>
+      <div class="big">${delta>=0?'+':''}${fmtFCFA(delta)}</div>
+    </div>
+  `;
+}
+
+/* ===================== PARAMETRES ===================== */
+function renderParametres(){
+  const cfg = loadSecurityConfig() || {autoLockMinutes:5};
+  const isLight = document.body.classList.contains('theme-light');
+  const suppliers = state.suppliers || [];
+  document.getElementById('view-parametres').innerHTML = `
+    <div class="section-head"><div><h1>Paramètres</h1><p>Entreprise, sécurité et données</p></div></div>
+
+    <div class="card settings-block">
+      <h3>Apparence</h3>
+      <div style="display:flex; gap:10px;">
+        <button class="btn ${!isLight?'primary':''} sm" data-action="set-theme" data-theme="dark">${ICONS.moon} Sombre</button>
+        <button class="btn ${isLight?'primary':''} sm" data-action="set-theme" data-theme="light">${ICONS.sun} Clair</button>
+      </div>
+    </div>
+
+    <div class="card settings-block">
+      <h3>Entreprise</h3>
+      <div class="field"><label>Nom de l'entreprise</label><input type="text" id="bizName" value="${escapeHTML(state.businessName)}" maxlength="80"></div>
+      <div class="field"><label>Charges fixes mensuelles (FCFA) — pour calculer la marge nette</label><input type="number" id="bizExpenses" value="${state.monthlyExpenses||0}" min="0"></div>
+      <button class="btn primary sm" data-action="save-bizname">Enregistrer</button>
+    </div>
+
+    <div class="card settings-block">
+      <h3>${ICONS.truck}Fournisseurs</h3>
+      <div style="margin-bottom:10px;">
+        ${suppliers.length===0?`<p style="font-size:12.5px;color:var(--text-faint);">Aucun fournisseur enregistré.</p>`:
+          suppliers.map(f=>`<div class="supplier-row"><span>${escapeHTML(f.name)}</span><button class="iconbtn" data-action="delete-supplier" data-id="${f.id}">${ICONS.trash}</button></div>`).join('')}
+      </div>
+      <button class="btn sm" data-action="new-supplier">${ICONS.plus} Ajouter un fournisseur</button>
+    </div>
+
+    <div class="card settings-block">
+      <h3>${ICONS.shield}Sécurité</h3>
+      <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:12px;">Vos données sont chiffrées sur cet appareil (AES-256, dérivé par PBKDF2 de votre code) et illisibles sans votre code confidentiel. Ce code n'est jamais stocké ni envoyé nulle part — notez-le, il ne peut pas être récupéré en cas d'oubli.</p>
+      <div class="field"><label>Verrouillage automatique après inactivité</label>
+        <select id="autoLockSelect">
+          <option value="1">1 minute</option>
+          <option value="5">5 minutes</option>
+          <option value="15">15 minutes</option>
+          <option value="30">30 minutes</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn" data-action="change-pin">Changer le code</button>
+        <button class="btn ghost" data-action="lock-now">Verrouiller maintenant</button>
+      </div>
+    </div>
+
+    <div class="card settings-block">
+      <h3>Assistant</h3>
+      <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:12px;">Boussole peut vous parler à voix haute et vous guider dans l'application.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn" data-action="toggle-voice">Activer/couper la voix</button>
+        <button class="btn" data-action="start-tour">Relancer la visite guidée</button>
+      </div>
+    </div>
+
+    <div class="card settings-block">
+      <h3>Données</h3>
+      <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:12px;">Sauvegardez régulièrement une copie chiffrée de vos données. Le fichier exporté reste protégé par votre code : sans lui, il est illisible.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn" data-action="export-data">${ICONS.download} Exporter (chiffré)</button>
+        <button class="btn" data-action="import-data">${ICONS.upload} Importer</button>
+        <button class="btn danger" data-action="reset-data">Réinitialiser la démo</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+    </div>
+
+    <div class="card about-card">
+      <div class="brand-mark"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0F1B2A"/><circle cx="32" cy="32" r="6" fill="#D4AF37"/><circle cx="32" cy="32" r="14" fill="none" stroke="#D4AF37" stroke-width="2" opacity="0.55"/><circle cx="32" cy="32" r="22" fill="none" stroke="#D4AF37" stroke-width="2" opacity="0.28"/></svg></div>
+      <div>
+        <div style="font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--gold-soft);">Boussole</div>
+        <div style="font-size:12px;color:var(--text-dim);">ERP intelligent pour PME — v1.2</div>
+        <div style="font-size:11.5px;color:var(--text-faint);margin-top:4px;">Développé par DataProSolutions · Direction : Koffi Kouame Jean Yves</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('importFile').addEventListener('change', handleImportFile);
+  const sel = document.getElementById('autoLockSelect');
+  sel.value = String(cfg.autoLockMinutes ?? 5);
+  sel.addEventListener('change', ()=>{
+    const c = loadSecurityConfig(); if(!c) return;
+    c.autoLockMinutes = parseInt(sel.value,10);
+    saveSecurityConfig(c);
+    showToast('Délai de verrouillage mis à jour');
+  });
+}
+
+/* ===================== MODALS ===================== */
+function openModal(html){
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('overlay').classList.add('active');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('active');}
+
+function modalNewSupplier(){
+  openModal(`
+    <h2>Nouveau fournisseur</h2>
+    <div class="field"><label>Nom du fournisseur</label><input type="text" id="mFName" maxlength="80" placeholder="Ex. Grossiste Adjamé Vivres"></div>
+    <div class="field"><label>Téléphone (optionnel)</label><input type="text" id="mFPhone" maxlength="20" placeholder="Ex. 2250700000000"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" data-action="close-modal">Annuler</button>
+      <button class="btn primary" data-action="save-supplier">Enregistrer</button>
+    </div>
+  `);
+}
+
+function modalNewProduct(existing){
+  const p = existing || {};
+  const cats = [...new Set(state.products.map(x=>x.category).filter(Boolean))];
+  openModal(`
+    <h2>${existing?'Modifier le produit':'Nouveau produit'}</h2>
+    <div class="field"><label>Nom du produit</label><input type="text" id="mName" value="${escapeHTML(p.name||'')}" maxlength="80" placeholder="Ex. Riz local"></div>
+    <div class="field"><label>Catégorie</label><input type="text" id="mCategory" value="${escapeHTML(p.category||'')}" maxlength="40" placeholder="Ex. Alimentation" list="catList">
+      <datalist id="catList">${cats.map(c=>`<option value="${escapeHTML(c)}">`).join('')}</datalist>
+    </div>
+    <div class="field"><label>Unité</label><input type="text" id="mUnit" value="${escapeHTML(p.unit||'')}" maxlength="40" placeholder="Ex. sac 25kg"></div>
+    <div class="field"><label>Stock actuel</label><input type="number" id="mStock" value="${p.stock??''}" min="0"></div>
+    <div class="field"><label>Seuil d'alerte</label><input type="number" id="mReorder" value="${p.reorder??''}" min="0"></div>
+    <div class="field"><label>Prix d'achat (FCFA)</label><input type="number" id="mCost" value="${p.cost??''}" min="0"></div>
+    <div class="field"><label>Prix de vente (FCFA)</label><input type="number" id="mSell" value="${p.sell??''}" min="0"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" data-action="close-modal">Annuler</button>
+      <button class="btn primary" data-action="save-product" data-id="${existing?p.id:''}">Enregistrer</button>
+    </div>
+  `);
+}
+function modalNewSale(){
+  const opts = state.products.map(p=>`<option value="${p.id}" data-price="${p.sell}">${escapeHTML(p.name)}</option>`).join('');
+  openModal(`
+    <h2>Nouvelle vente</h2>
+    <div class="field"><label>Produit</label><select id="mProduct">${opts}</select></div>
+    <div class="field"><label>Quantité</label><input type="number" id="mQty" value="1" min="1"></div>
+    <div class="field"><label>Prix unitaire (FCFA)</label><input type="number" id="mPrice" value="${state.products[0]?state.products[0].sell:0}" min="0"></div>
+    <div class="field"><label>Date</label><input type="text" id="mDate" value="${new Date().toISOString().slice(0,10)}" placeholder="AAAA-MM-JJ"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" data-action="close-modal">Annuler</button>
+      <button class="btn primary" data-action="save-sale">Enregistrer</button>
+    </div>
+  `);
+  document.getElementById('mProduct').addEventListener('change', e=>{
+    document.getElementById('mPrice').value = e.target.selectedOptions[0].dataset.price;
+  });
+}
+function modalNewClient(){
+  openModal(`
+    <h2>Nouvelle facture client</h2>
+    <div class="field"><label>Nom du client</label><input type="text" id="mCName" maxlength="80" placeholder="Ex. Kouassi Distribution"></div>
+    <div class="field"><label>Téléphone WhatsApp (avec indicatif, sans +)</label><input type="text" id="mCPhone" maxlength="20" placeholder="Ex. 2250700000000"></div>
+    <div class="field"><label>Montant (FCFA)</label><input type="number" id="mCAmount" min="0"></div>
+    <div class="field"><label>Date de facture</label><input type="text" id="mCDate" value="${new Date().toISOString().slice(0,10)}" placeholder="AAAA-MM-JJ"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" data-action="close-modal">Annuler</button>
+      <button class="btn primary" data-action="save-client">Enregistrer</button>
+    </div>
+  `);
+}
+
+/* ===================== ACTIONS ===================== */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+function handleAction(action, ds){
+  switch(action){
+    case 'new-product': modalNewProduct(); break;
+    case 'edit-product': modalNewProduct(state.products.find(p=>p.id===ds.id)); break;
+    case 'delete-product':
+      if(confirm('Supprimer ce produit ?')){ state.products = state.products.filter(p=>p.id!==ds.id); saveState(); renderStock(); showToast('Produit supprimé'); }
+      break;
+    case 'save-product': {
+      const name = document.getElementById('mName').value.trim().slice(0,80);
+      const category = document.getElementById('mCategory').value.trim().slice(0,40) || 'Général';
+      const unit = document.getElementById('mUnit').value.trim().slice(0,40);
+      const stock = Math.max(0, parseFloat(document.getElementById('mStock').value)||0);
+      const reorder = Math.max(0, parseFloat(document.getElementById('mReorder').value)||0);
+      const cost = Math.max(0, parseFloat(document.getElementById('mCost').value)||0);
+      const sell = Math.max(0, parseFloat(document.getElementById('mSell').value)||0);
+      if(!name){ showToast('Le nom du produit est requis'); return; }
+      if(ds.id){
+        const p = state.products.find(x=>x.id===ds.id);
+        Object.assign(p,{name,category,unit,stock,reorder,cost,sell});
+      } else {
+        state.products.push({id:uid('p'), name, category, unit, stock, reorder, cost, sell});
+      }
+      saveState(); closeModal(); renderStock(); showToast('Produit enregistré');
+      break;
+    }
+    case 'new-sale': modalNewSale(); break;
+    case 'save-sale': {
+      const productId = document.getElementById('mProduct').value;
+      const qty = Math.max(0, parseFloat(document.getElementById('mQty').value)||0);
+      const unitPrice = Math.max(0, parseFloat(document.getElementById('mPrice').value)||0);
+      const dateVal = document.getElementById('mDate').value;
+      const date = !isNaN(Date.parse(dateVal)) ? dateVal : new Date().toISOString().slice(0,10);
+      if(qty<=0){ showToast('Quantité invalide'); return; }
+      state.sales.push({id:uid('s'), productId, qty, unitPrice, date:new Date(date).toISOString()});
+      const p = state.products.find(x=>x.id===productId);
+      if(p) p.stock = Math.max(0, p.stock-qty);
+      saveState(); closeModal(); renderVentes(); showToast('Vente enregistrée');
+      break;
+    }
+    case 'delete-sale':
+      if(confirm('Supprimer cette vente ?')){ state.sales = state.sales.filter(s=>s.id!==ds.id); saveState(); renderVentes(); showToast('Vente supprimée'); }
+      break;
+    case 'new-client': modalNewClient(); break;
+    case 'save-client': {
+      const name = document.getElementById('mCName').value.trim().slice(0,80);
+      const phone = document.getElementById('mCPhone').value.trim().replace(/\D/g,'').slice(0,20);
+      const amount = Math.max(0, parseFloat(document.getElementById('mCAmount').value)||0);
+      const dateVal = document.getElementById('mCDate').value;
+      const date = !isNaN(Date.parse(dateVal)) ? dateVal : new Date().toISOString().slice(0,10);
+      if(!name){ showToast('Le nom du client est requis'); return; }
+      state.clients.push({id:uid('c'), name, phone, amount, invoiceDate:new Date(date).toISOString(), paid:false});
+      saveState(); closeModal(); renderClients(); showToast('Facture ajoutée');
+      break;
+    }
+    case 'mark-paid': {
+      const c = state.clients.find(x=>x.id===ds.id);
+      if(c) c.paid = true;
+      saveState(); renderClients(); showToast('Facture marquée comme payée');
+      break;
+    }
+    case 'delete-client':
+      if(confirm('Supprimer ce client ?')){ state.clients = state.clients.filter(c=>c.id!==ds.id); saveState(); renderClients(); showToast('Client supprimé'); }
+      break;
+    case 'whatsapp-relance': {
+      const c = state.clients.find(x=>x.id===ds.id);
+      if(!c || !c.phone) break;
+      const msg = encodeURIComponent(`Bonjour ${c.name}, nous vous rappelons que la facture de ${fmtFCFA(c.amount)} du ${fmtDate(c.invoiceDate)} reste impayée. Merci de régulariser votre situation dans les meilleurs délais. — ${state.businessName}`);
+      window.open(`https://wa.me/${c.phone}?text=${msg}`, '_blank', 'noopener,noreferrer');
+      break;
+    }
+    case 'close-modal': closeModal(); break;
+    case 'save-bizname': {
+      const v = document.getElementById('bizName').value.trim().slice(0,80);
+      const exp = Math.max(0, parseFloat(document.getElementById('bizExpenses').value)||0);
+      state.monthlyExpenses = exp;
+      if(v){ state.businessName = v; }
+      saveState(); showToast('Paramètres enregistrés'); switchView('parametres');
+      break;
+    }
+    case 'export-data': exportData(); break;
+    case 'import-data': document.getElementById('importFile').click(); break;
+    case 'reset-data':
+      if(confirm('Réinitialiser toutes les données avec le jeu de démonstration ? Cette action est irréversible.')){
+        state = seedDemoData(); saveState(); switchView('dashboard'); showToast('Données réinitialisées');
+      }
+      break;
+    case 'toggle-assistant': toggleAssistant(); break;
+    case 'toggle-voice': toggleVoice(); break;
+    case 'assistant-send': sendUserText(); break;
+    case 'mic-toggle': toggleMic(); break;
+    case 'assistant-quick': sendUserText(ds.q); break;
+    case 'speak-insights': speakInsightsAloud(); break;
+    case 'start-tour': startTour(); break;
+    case 'tour-next': tourNext(); break;
+    case 'tour-prev': tourPrev(); break;
+    case 'tour-skip': endTour(); break;
+    case 'change-pin': startChangePin(); break;
+    case 'lock-now': lockNow(); break;
+    case 'toggle-theme': applyTheme(document.body.classList.contains('theme-light') ? 'dark' : 'light'); if(currentView==='dashboard') drawCharts(); break;
+    case 'set-theme': applyTheme(ds.theme); if(currentView==='dashboard') drawCharts(); if(currentView==='parametres') renderParametres(); break;
+    case 'new-supplier': modalNewSupplier(); break;
+    case 'save-supplier': {
+      const name = document.getElementById('mFName').value.trim().slice(0,80);
+      const phone = document.getElementById('mFPhone').value.trim().replace(/\D/g,'').slice(0,20);
+      if(!name){ showToast('Le nom du fournisseur est requis'); return; }
+      if(!state.suppliers) state.suppliers = [];
+      state.suppliers.push({id:uid('f'), name, phone});
+      saveState(); closeModal(); renderParametres(); showToast('Fournisseur ajouté');
+      break;
+    }
+    case 'delete-supplier':
+      if(confirm('Supprimer ce fournisseur ?')){
+        state.suppliers = (state.suppliers||[]).filter(f=>f.id!==ds.id);
+        saveState(); renderParametres(); showToast('Fournisseur supprimé');
+      }
+      break;
+  }
+}
+
+async function exportData(){
+  if(!sessionKey || !sessionSalt){ showToast('Application verrouillée'); return; }
+  try{
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const enc = new TextEncoder().encode(JSON.stringify(state));
+    const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, sessionKey, enc);
+    const payload = {vigieBackup:2, salt:sessionSalt, iv:b64encode(iv), data:b64encode(ct)};
+    const blob = new Blob([JSON.stringify(payload)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `boussole-sauvegarde-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    showToast('Sauvegarde chiffrée exportée');
+  }catch(e){ showToast("Échec de l'export"); }
+}
+function handleImportFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async evt=>{
+    let parsed;
+    try{ parsed = JSON.parse(evt.target.result); }catch(err){ showToast('Fichier invalide'); e.target.value=''; return; }
+    if(parsed && parsed.vigieBackup && parsed.salt && parsed.data && parsed.iv){
+      const pin = prompt('Entrez le code à 4 chiffres utilisé pour créer cette sauvegarde :');
+      if(!pin){ e.target.value=''; return; }
+      try{
+        const key = await deriveKey(pin, parsed.salt);
+        const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64decode(parsed.iv)}, key, b64decode(parsed.data));
+        applyImportedState(JSON.parse(new TextDecoder().decode(pt)));
+      }catch(err){ showToast('Code incorrect ou fichier corrompu'); }
+    } else if(parsed && Array.isArray(parsed.products) && Array.isArray(parsed.sales) && Array.isArray(parsed.clients)){
+      applyImportedState(parsed);
+    } else {
+      showToast('Format de fichier non reconnu');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+function applyImportedState(data){
+  state = sanitizeImportedState(data);
+  saveState();
+  switchView('dashboard');
+  showToast('Données importées et chiffrées');
+}
+
+/* ===================== SYNC / CLOCK UI ===================== */
+function updateSyncUI(ok){
+  const dot = document.getElementById('syncDot');
+  const label = document.getElementById('syncLabel');
+  if(!navigator.onLine){ dot.classList.add('off'); label.textContent = 'Hors ligne · chiffré localement'; }
+  else if(ok===false){ dot.classList.add('off'); label.textContent = 'Erreur de sauvegarde'; }
+  else { dot.classList.remove('off'); label.textContent = 'Chiffré & synchronisé'; }
+}
+function updateClock(){
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long', day:'2-digit', month:'long'});
+}
+
+/* ===================== ASSISTANT IA (chat + voix) ===================== */
+let voiceEnabled = localStorage.getItem('vigie_voice') !== '0';
+let assistantOpen = false;
+let assistantGreeted = false;
+let frenchVoice = null;
+let recognition = null;
+let listening = false;
+
+function stripAccents(t){return t.normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function norm(t){return stripAccents((t||'').toLowerCase()).trim();}
+
+function pickFrenchVoice(){
+  if(!('speechSynthesis' in window)) return;
+  const voices = speechSynthesis.getVoices();
+  frenchVoice = voices.find(v=>v.lang && v.lang.toLowerCase().startsWith('fr')) || null;
+}
+if('speechSynthesis' in window){
+  pickFrenchVoice();
+  speechSynthesis.onvoiceschanged = pickFrenchVoice;
+}
+function speak(text){
+  if(!voiceEnabled || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/[*_#]/g,''));
+  u.lang = 'fr-FR';
+  if(frenchVoice) u.voice = frenchVoice;
+  u.rate = 1;
+  speechSynthesis.speak(u);
+}
+function updateVoiceBtn(){
+  const b = document.getElementById('voiceToggleBtn');
+  if(!b) return;
+  b.innerHTML = voiceEnabled ? ICONS.speaker : ICONS.speakerOff;
+}
+function toggleVoice(){
+  voiceEnabled = !voiceEnabled;
+  localStorage.setItem('vigie_voice', voiceEnabled?'1':'0');
+  updateVoiceBtn();
+  if(!voiceEnabled && 'speechSynthesis' in window) speechSynthesis.cancel();
+  showToast(voiceEnabled ? 'Voix activée' : 'Voix coupée');
+}
+function speakInsightsAloud(){
+  const insights = generateInsights();
+  if(insights.length===0){ speak("Tout semble sous contrôle, aucune alerte pour le moment."); return; }
+  const wasOff = !voiceEnabled;
+  if(wasOff) voiceEnabled = true;
+  speak("Voici vos principales alertes. " + insights.slice(0,3).map(i=>i.title+'. '+i.desc).join(' '));
+  if(wasOff) voiceEnabled = false;
+}
+
+function setupRecognition(){
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.getElementById('micBtn');
+  if(!R){ if(micBtn){ micBtn.setAttribute('disabled','true'); micBtn.title='Micro non disponible sur cet appareil'; } return; }
+  recognition = new R();
+  recognition.lang = 'fr-FR';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.onresult = e=>{ document.getElementById('assistantInput').value = e.results[0][0].transcript; sendUserText(); };
+  recognition.onend = ()=>{ listening=false; micBtn.classList.remove('listening'); };
+  recognition.onerror = ()=>{ listening=false; micBtn.classList.remove('listening'); };
+}
+function toggleMic(){
+  if(!recognition) return;
+  const micBtn = document.getElementById('micBtn');
+  if(listening){ recognition.stop(); listening=false; micBtn.classList.remove('listening'); return; }
+  try{ recognition.start(); listening=true; micBtn.classList.add('listening'); }catch(e){}
+}
+
+function toggleAssistant(){
+  assistantOpen = !assistantOpen;
+  document.getElementById('assistantPanel').classList.toggle('open', assistantOpen);
+  if(assistantOpen && !assistantGreeted){ assistantGreeted = true; greetUser(); }
+}
+function openAssistant(){
+  if(!assistantOpen){ assistantOpen=true; document.getElementById('assistantPanel').classList.add('open'); }
+}
+function scrollAssistantBottom(){
+  const body = document.getElementById('assistantMessages');
+  body.scrollTop = body.scrollHeight;
+}
+function addBotMessage(text, opts){
+  const body = document.getElementById('assistantMessages');
+  const div = document.createElement('div');
+  div.className = 'a-msg bot';
+  div.textContent = text;
+  body.appendChild(div);
+  scrollAssistantBottom();
+  if(!opts || opts.speak!==false) speak(text);
+}
+function addUserMessage(text){
+  const body = document.getElementById('assistantMessages');
+  const div = document.createElement('div');
+  div.className = 'a-msg user';
+  div.textContent = text;
+  body.appendChild(div);
+  scrollAssistantBottom();
+}
+function addChoices(options){
+  const body = document.getElementById('assistantMessages');
+  const wrap = document.createElement('div');
+  wrap.className = 'a-choices';
+  options.forEach(opt=>{
+    const b = document.createElement('button');
+    b.type='button'; b.textContent = opt.label;
+    b.addEventListener('click', ()=>{ wrap.remove(); addUserMessage(opt.label); opt.onSelect(); });
+    wrap.appendChild(b);
+  });
+  body.appendChild(wrap);
+  scrollAssistantBottom();
+}
+function greetUser(){
+  const firstEver = !localStorage.getItem('vigie_onboarded');
+  const insights = generateInsights();
+  const critCount = insights.filter(i=>i.sev==='critical').length;
+  let text = `Bonjour, je suis Boussole 👋 `;
+  text += insights.length
+    ? `Vous avez ${insights.length} alerte${insights.length>1?'s':''} aujourd'hui${critCount?`, dont ${critCount} urgente${critCount>1?'s':''}`:''}.`
+    : `Tout semble sous contrôle aujourd'hui.`;
+  addBotMessage(text);
+  if(firstEver){
+    setTimeout(()=>{
+      addBotMessage("Voulez-vous une petite visite guidée de l'application ?", {speak:false});
+      addChoices([
+        {label:'Oui, montre-moi', onSelect:()=>{ localStorage.setItem('vigie_onboarded','1'); startTour(); }},
+        {label:'Non merci', onSelect:()=>{ localStorage.setItem('vigie_onboarded','1'); addBotMessage("Pas de souci, je reste disponible à tout moment. Vous pouvez aussi me demander à voix haute !", {speak:false}); }},
+      ]);
+    }, 500);
+  }
+}
+function sendUserText(preset){
+  const input = document.getElementById('assistantInput');
+  const text = (preset!==undefined ? preset : input.value).trim();
+  if(!text) return;
+  addUserMessage(text);
+  input.value = '';
+  setTimeout(()=>assistantRespond(text), 250);
+}
+function assistantRespond(rawText){
+  const t = norm(rawText);
+  const cur = revenueProfit(salesFor(null,0,29));
+  const marginPct = cur.revenue>0 ? cur.profit/cur.revenue*100 : 0;
+
+  const intents = [
+    { test:t=>/bonjour|salut|bonsoir|coucou/.test(t) && t.length<25, run:()=>addBotMessage("Bonjour ! Comment puis-je vous aider aujourd'hui ?") },
+    { test:t=>/aide|que peux tu faire|que sais tu faire|commande/.test(t), run:()=>addBotMessage("Je peux vous donner votre chiffre d'affaires, votre bénéfice, vos produits en rupture, vos clients en retard, vous aider à enregistrer une vente, un produit ou une facture, ouvrir le simulateur de prix, ou vous faire visiter l'application.") },
+    { test:t=>/visite guidee|guide moi|montre moi l.application|tutoriel|comment ca marche/.test(t), run:()=>{ addBotMessage("C'est parti, je vous montre l'essentiel !"); setTimeout(startTour, 400); } },
+    { test:t=>/chiffre d.affaire|combien j.ai vendu|total des ventes/.test(t), run:()=>addBotMessage(`Votre chiffre d'affaires sur les 30 derniers jours est de ${fmtFCFA(cur.revenue)}.`) },
+    { test:t=>/benefice|profit|combien j.ai gagne/.test(t), run:()=>addBotMessage(`Votre bénéfice sur les 30 derniers jours est de ${fmtFCFA(cur.profit)}, soit une marge de ${marginPct.toFixed(1)}%.`) },
+    { test:t=>/\bmarge\b/.test(t), run:()=>addBotMessage(`Votre marge actuelle est de ${marginPct.toFixed(1)}% sur les 30 derniers jours.`) },
+    { test:t=>/rupture|stock/.test(t), run:()=>{
+        const atRisk = state.products.filter(p=>daysUntilStockout(p)<=5 || p.stock<=p.reorder);
+        if(atRisk.length===0){ addBotMessage("Aucun produit n'est en dessous du seuil d'alerte pour le moment."); return; }
+        addBotMessage(`Attention à ces produits : ${atRisk.map(p=>`${p.name} (${p.stock} ${p.unit})`).join(', ')}.`);
+        addChoices([{label:'Voir le stock', onSelect:()=>switchView('stock')}]);
+      } },
+    { test:t=>/impaye|en retard|n.a pas paye|relance|facture/.test(t), run:()=>{
+        const overdue = state.clients.filter(c=>!c.paid && daysAgoOf(c.invoiceDate)>30);
+        if(overdue.length===0){ addBotMessage("Aucun client en retard de paiement significatif pour le moment."); return; }
+        addBotMessage(`Ces clients doivent régulariser leur situation : ${overdue.map(c=>`${c.name} (${fmtFCFA(c.amount)}, ${daysAgoOf(c.invoiceDate)} jours)`).join(', ')}.`);
+        addChoices([{label:'Voir les clients', onSelect:()=>switchView('clients')}]);
+      } },
+    { test:t=>/ajouter une vente|enregistrer une vente|nouvelle vente/.test(t), run:()=>{ addBotMessage("Je vous ouvre le formulaire de vente."); switchView('ventes'); setTimeout(()=>modalNewSale(),300); } },
+    { test:t=>/ajouter un produit|nouveau produit/.test(t), run:()=>{ addBotMessage("Je vous ouvre le formulaire produit."); switchView('stock'); setTimeout(()=>modalNewProduct(),300); } },
+    { test:t=>/ajouter un client|nouvelle facture|ajouter une facture/.test(t), run:()=>{ addBotMessage("Je vous ouvre le formulaire client."); switchView('clients'); setTimeout(()=>modalNewClient(),300); } },
+    { test:t=>/simuler|simulateur|augmenter le prix|hausse de prix|baisser le prix/.test(t), run:()=>{ addBotMessage("Voici le simulateur de prix : ajustez le curseur pour voir l'impact sur votre marge."); switchView('simulateur'); } },
+    { test:t=>/resume|resume du jour|comment va mon entreprise/.test(t), run:()=>{
+        const insights = generateInsights();
+        addBotMessage(`Chiffre d'affaires : ${fmtFCFA(cur.revenue)}. Bénéfice : ${fmtFCFA(cur.profit)}. ${insights.length?`${insights.length} alerte(s) à consulter sur le tableau de bord.`:"Aucune alerte, tout va bien."}`);
+        switchView('dashboard');
+      } },
+    { test:t=>/merci/.test(t), run:()=>addBotMessage("Avec plaisir ! Je reste disponible si besoin.") },
+    { test:t=>/tableau de bord|dashboard/.test(t), run:()=>{ addBotMessage("Voici votre tableau de bord."); switchView('dashboard'); } },
+  ];
+  const match = intents.find(i=>i.test(t));
+  if(match){ match.run(); return; }
+  addBotMessage("Je n'ai pas bien compris. Vous pouvez me demander votre chiffre d'affaires, vos produits en rupture, vos clients en retard, ou dire « visite guidée ».");
+}
+
+/* ===================== VISITE GUIDÉE ===================== */
+const TOUR_STEPS = [
+  {sel:'#tourHero', title:"Bienvenue sur Boussole 👋", desc:"Votre copilote qui surveille votre activité et vous alerte avant que les problèmes n'arrivent."},
+  {sel:'#tourKPI', title:"Vos indicateurs clés", desc:"Chiffre d'affaires, bénéfice et marge des 30 derniers jours, comparés à la période précédente."},
+  {sel:'#tourInsights', title:"Ce que Boussole observe", desc:"Des alertes calculées automatiquement à partir de vos données : rupture de stock, factures impayées, marge en baisse…"},
+  {sel:'[data-nav="stock"]', title:"Le Stock", desc:"Suivez vos produits et recevez une alerte avant la rupture."},
+  {sel:'[data-nav="ventes"]', title:"Les Ventes", desc:"Enregistrez chaque vente ici : le stock et les statistiques se mettent à jour automatiquement."},
+  {sel:'[data-nav="clients"]', title:"Clients & Factures", desc:"Suivez les impayés et relancez vos clients en un clic sur WhatsApp."},
+  {sel:'[data-nav="simulateur"]', title:"Le Simulateur de prix", desc:"Testez l'impact d'une hausse de prix sur votre marge avant de décider."},
+  {sel:'#assistantFab', title:"Votre assistante", desc:"Cliquez ici à tout moment pour me parler, à l'écrit ou à la voix. Je réponds à vos questions et je vous guide."},
+];
+let tourIndex = 0;
+let tourActive = false;
+
+function getVisibleTarget(sel){
+  const els = document.querySelectorAll(sel);
+  for(const el of els){
+    const r = el.getBoundingClientRect();
+    if(r.width>0 && r.height>0) return el;
+  }
+  return els[0] || null;
+}
+function startTour(){
+  if(assistantOpen) toggleAssistant();
+  switchView('dashboard');
+  tourIndex = 0; tourActive = true;
+  document.getElementById('tourOverlay').classList.add('active');
+  setTimeout(()=>showTourStep(0), 50);
+}
+function showTourStep(i){
+  const step = TOUR_STEPS[i];
+  const target = getVisibleTarget(step.sel);
+  const spot = document.getElementById('tourSpot');
+  const card = document.getElementById('tourCard');
+  if(!target){ tourNext(); return; }
+  const r = target.getBoundingClientRect();
+  const pad = 8;
+  spot.style.left = (r.left-pad)+'px'; spot.style.top = (r.top-pad)+'px';
+  spot.style.width = (r.width+pad*2)+'px'; spot.style.height = (r.height+pad*2)+'px';
+  document.getElementById('tourProgress').textContent = `Étape ${i+1} / ${TOUR_STEPS.length}`;
+  document.getElementById('tourTitle').textContent = step.title;
+  document.getElementById('tourDesc').textContent = step.desc;
+  document.getElementById('tourPrevBtn').style.visibility = i===0 ? 'hidden' : 'visible';
+  document.getElementById('tourNextBtn').textContent = i===TOUR_STEPS.length-1 ? 'Terminer' : 'Suivant';
+  const cardW = 280, cardH = card.offsetHeight || 160;
+  let top = r.bottom + 16;
+  if(top + cardH > window.innerHeight - 12) top = Math.max(12, r.top - cardH - 16);
+  let left = Math.min(Math.max(12, r.left), window.innerWidth - cardW - 12);
+  card.style.top = top+'px'; card.style.left = left+'px';
+  speak(step.title + '. ' + step.desc);
+}
+function tourNext(){ if(tourIndex >= TOUR_STEPS.length-1){ endTour(); return; } tourIndex++; showTourStep(tourIndex); }
+function tourPrev(){ if(tourIndex<=0) return; tourIndex--; showTourStep(tourIndex); }
+function endTour(){
+  tourActive = false;
+  document.getElementById('tourOverlay').classList.remove('active');
+  localStorage.setItem('vigie_onboarded','1');
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  openAssistant();
+  assistantGreeted = true;
+  setTimeout(()=>addBotMessage("Vous êtes prêt(e) ! N'hésitez pas à me solliciter à tout moment, à l'écrit ou à la voix."),200);
+}
+window.addEventListener('resize', ()=>{ if(tourActive) showTourStep(tourIndex); });
+
+function initAssistant(){
+  updateVoiceBtn();
+  setupRecognition();
+  document.getElementById('assistantInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendUserText(); });
+}
+
+/* ===================== INIT / EVENTS ===================== */
+document.addEventListener('click', e=>{
+  const nav = e.target.closest('[data-nav]');
+  if(nav){ switchView(nav.dataset.nav); return; }
+  if(e.target.id==='overlay'){ closeModal(); return; }
+  const act = e.target.closest('[data-action]');
+  if(act){ handleAction(act.dataset.action, act.dataset); }
+});
+window.addEventListener('online', ()=>updateSyncUI(true));
+window.addEventListener('offline', ()=>updateSyncUI(false));
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) checkAutoLock(); });
+setInterval(checkAutoLock, 15000);
+
+function finishBoot(){
+  renderNav();
+  updateClock();
+  updateSyncUI(true);
+  switchView('dashboard');
+  initAssistant();
+  setInterval(updateClock, 60000);
+  lastActivity = Date.now();
+  if(!localStorage.getItem('vigie_onboarded')) setTimeout(()=>{ toggleAssistant(); }, 900);
+}
+
+(function boot(){
+  const cfg = loadSecurityConfig();
+  if(cfg) showLockScreen();
+  else showSetupScreen();
+})();
+</script>
+</body>
+</html>
